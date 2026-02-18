@@ -18,7 +18,7 @@
 
 - Clone or fork this repository.
 - Create a new branch: `{user}-assignment`.
-- Invite **@ikhsan017** and **@dhiaazizr** as collaborators.
+- Invite **@ikhsan017** and **@dhiaaziz** as collaborators.
 - Follow the setup instructions provided in the repository before running the project.
 
 ## 2. Feature Requirements
