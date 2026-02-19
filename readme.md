@@ -24,6 +24,12 @@ Below is the Entity Relationship Diagram (ERD) representing the data structure:
 
 ![ERD](./erd-new.png)
 
+### Data Model (ERD)
+
+Below is the Entity Relationship Diagram (ERD) representing the data structure:
+
+![ERD](./erd.png)
+
 ### Import / Export (Main Criteria)
 
 - [ ] **Export by Supplier**
