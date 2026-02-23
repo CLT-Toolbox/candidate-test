@@ -28,20 +28,20 @@ class SupplierController extends Controller
     {
         $this->supplierRepository->create($request->validated());
 
-        return redirect()->route('supplier.index');
+        return redirect()->route('suppliers.index');
     }
 
     public function update(SupplierRequest $request, Supplier $supplier)
     {
         $this->supplierRepository->update($supplier, $request->validated());
 
-        return redirect()->route('supplier.index');
+        return redirect()->route('suppliers.index');
     }
 
     public function destroy(Supplier $supplier)
     {
         $this->supplierRepository->delete($supplier);
 
-        return redirect()->route('supplier.index');
+        return redirect()->route('suppliers.index');
     }
 }
