@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Interfaces\SupplierRepositoryInteface;
+use App\Repositories\SupplierRepository;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -11,7 +13,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(
+            SupplierRepositoryInteface::class,
+            SupplierRepository::class,
+        );
     }
 
     /**
@@ -19,6 +24,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        \Illuminate\Pagination\Paginator::useTailwind();
     }
 }
