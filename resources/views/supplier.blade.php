@@ -31,20 +31,24 @@
                     </div>
 
                     <!-- Search and Filter -->
-                    <div class="flex items-center gap-2 mb-6">
+                    <form method="GET" action="{{ route('suppliers') }}" class="flex items-center gap-2 mb-6">
                         <div class="flex-1">
-                            <input type="text" placeholder="Search suppliers by name..."
+                            <input type="text" name="q" value="{{ request('q') }}" placeholder="Search suppliers by name..."
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-green-700 transition">
                         </div>
-                        <button class="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 transition-colors">
+                        <div>
+                            <select name="is_active" class="px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 text-sm focus:outline-none">
+                                <option value="">All</option>
+                                <option value="1" {{ request('is_active') === '1' ? 'selected' : '' }}>Active</option>
+                                <option value="0" {{ request('is_active') === '0' ? 'selected' : '' }}>Inactive</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
                             Filter
                         </button>
-                        <button class="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 transition-colors">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                            Export
-                        </button>
-                    </div>
+                        <a href="{{ route('suppliers') }}" class="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 transition-colors">Reset</a>
+                    </form>
 
                     <!-- Table -->
                     <div class="overflow-x-auto">

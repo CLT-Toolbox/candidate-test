@@ -8,9 +8,23 @@ use Illuminate\Support\Facades\Log;
 
 class SupplierController extends Controller
 {
-    public function index()
+    public function index(\Illuminate\Http\Request $request)
     {
-        $suppliers = Supplier::orderBy('created_at', 'desc')->paginate(5);
+        $query = Supplier::query();
+
+        if ($q = $request->query('q')) {
+            $query->where('name', 'like', '%' . $q . '%');
+        }
+
+        if ($request->has('is_active') && $request->query('is_active') !== null && $request->query('is_active') !== '') {
+            $isActive = $request->query('is_active');
+            if ($isActive === '1' || $isActive === '0') {
+                $query->where('is_active', (int) $isActive);
+            }
+        }
+
+        $suppliers = $query->orderBy('created_at', 'desc')->paginate(5)->appends($request->only(['q', 'is_active']));
+
         return view('supplier', compact('suppliers'));
     }
 
