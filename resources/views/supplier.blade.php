@@ -76,7 +76,7 @@
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="px-4 py-3.5 whitespace-nowrap text-gray-700">{{ 20 }}</td>
+                                        <td class="px-4 py-3.5 whitespace-nowrap text-gray-700">{{ $supp->cltLayups->count() }}</td>
                                         <td class="px-4 py-3.5 whitespace-nowrap text-gray-600">{{ $supp->created_at->format('M j, Y') }}</td>
                                         <td class="px-4 py-3.5 whitespace-nowrap">
                                             <div class="flex items-center gap-2">

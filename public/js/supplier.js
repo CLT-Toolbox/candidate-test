@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", function () {
     window.confirmDelete = function (id, name) {
         Swal.fire({
             title: 'Are you sure?',
-            text: "You won't be able to revert this! Deleting " + name,
+            text: "You won't to delete " + name + " ? This action can delete related CLT Layups dan Layers!",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',

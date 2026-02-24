@@ -10,7 +10,7 @@ class SupplierController extends Controller
 {
     public function index()
     {
-        $suppliers = Supplier::paginate(5);
+        $suppliers = Supplier::orderBy('created_at', 'desc')->paginate(5);
         return view('supplier', compact('suppliers'));
     }
 
@@ -87,7 +87,8 @@ class SupplierController extends Controller
     {
         try {
             $supplier = Supplier::findOrFail($id);
-            return view('supplier_detail', compact('supplier'));
+            $layups = $supplier->cltLayups()->paginate(5);
+            return view('supplier_detail', compact('supplier', 'layups'));
         } catch (\Exception $e) {
             Log::error('Failed to retrieve supplier: ' . $e->getMessage());
             return redirect()

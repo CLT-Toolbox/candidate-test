@@ -17,6 +17,8 @@ return new class extends Migration
                   ->constrained('suppliers')
                   ->onDelete('cascade');
             $table->string('name');
+            $table->integer('status')->default(0);
+            $table->string('species_grade')->nullable();
             $table->timestamps();
 
             $table->unique(['supplier_id', 'name']);
