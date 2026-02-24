@@ -31,20 +31,20 @@ class CltLayupController extends Controller
     {
         $this->cltLayupRepository->create($supplier, $request->validated());
 
-        return redirect()->route('supplier.layups.index');
+        return redirect()->route('suppliers.layups.index', $supplier->id);
     }
 
-    public function update(CltLayupRequest $request, CltLayup $layup)
+    public function update(CltLayupRequest $request, Supplier $supplier, CltLayup $layup)
     {
         $this->cltLayupRepository->update($layup, $request->validated());
 
-        return redirect()->route('supplier.layups.index');
+        return redirect()->route('suppliers.layups.index', $supplier->id);
     }
 
-    public function destroy(CltLayup $layup)
+    public function destroy(Supplier $supplier, CltLayup $layup)
     {
         $this->cltLayupRepository->delete($layup);
 
-        return redirect()->route('supplier.layups.index');
+        return redirect()->route('suppliers.layups.index', $supplier->id);
     }
 }
