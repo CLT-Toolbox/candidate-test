@@ -11,4 +11,5 @@ interface CltLayupRepositoryInterface {
     public function create(Supplier $supplier, array $details);
     public function update(CltLayup $layup, array $newDetails);
     public function delete(CltLayup $layup);
+    public function getExport(Supplier $supplier);
 }

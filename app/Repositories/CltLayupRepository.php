@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Interfaces\CltLayupRepositoryInterface;
+use App\Models\CltLayer;
 use App\Models\CltLayup;
 use App\Models\Supplier;
 
@@ -37,5 +38,10 @@ class CltLayupRepository implements CltLayupRepositoryInterface
     public function delete(CltLayup $layup)
     {
         return $layup->delete();
+    }
+
+    public function getExport(Supplier $supplier)
+    {
+        return CltLayer::with('cltLayup')->whereRelation('cltLayup', 'supplier_id', $supplier->id)->get();
     }
 }

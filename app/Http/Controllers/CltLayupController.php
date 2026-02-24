@@ -6,15 +6,18 @@ use App\Http\Requests\CltLayupRequest;
 use App\Interfaces\CltLayupRepositoryInterface;
 use App\Models\CltLayup;
 use App\Models\Supplier;
+use App\Services\CltLayupService;
 use Illuminate\Http\Request;
 
 class CltLayupController extends Controller
 {
     protected CltLayupRepositoryInterface $cltLayupRepository;
+    protected CltLayupService $cltLayupService;
 
-    public function __construct(CltLayupRepositoryInterface $cltLayupRepository)
+    public function __construct(CltLayupRepositoryInterface $cltLayupRepository, CltLayupService $cltLayupService)
     {
         $this->cltLayupRepository = $cltLayupRepository;
+        $this->cltLayupService = $cltLayupService;
     }
 
     public function index(Request $request, Supplier $supplier)
@@ -46,5 +49,10 @@ class CltLayupController extends Controller
         $this->cltLayupRepository->delete($layup);
 
         return redirect()->route('suppliers.layups.index', $supplier->id);
+    }
+
+    public function export(Supplier $supplier, CltLayup $layup)
+    {
+        return $this->cltLayupService->exportToXlxs($supplier);
     }
 }
