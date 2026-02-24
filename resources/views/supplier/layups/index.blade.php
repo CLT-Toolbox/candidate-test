@@ -31,6 +31,10 @@
                                     {{ __('Export') }}
                                 </x-secondary-button>
                             </a>
+                            <x-secondary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'import-layup-modal')">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                                {{ __('Import') }}
+                            </x-secondary-button>
                         </div>
                         </div>
                     </div>
@@ -122,6 +126,43 @@
                     placeholder="{{ __('Name') }}"
                 />
                 <x-input-error :messages="$errors->get('name')" class="mt-2" />
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <x-secondary-button x-on:click="$dispatch('close')">
+                    {{ __('Batal') }}
+                </x-secondary-button>
+
+                <x-primary-button class="ml-3">
+                    {{ __('Simpan') }}
+                </x-primary-button>
+            </div>
+        </form>
+    </x-modal>
+
+    <!-- Import Modal -->
+    <x-modal name="import-layup-modal" :show="$errors->userDeletion->isNotEmpty()" focusable>
+        <form method="post" action="{{ route('suppliers.layups.import', $supplier->id) }}" class="p-6">
+            @csrf
+            @method('post')
+
+            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                {{ __('Import Layup') }}
+            </h2>
+
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                {{ __('Upload data layups') }}
+            </p>
+
+            <div class="mt-6">
+                <x-input-label for="file" value="{{ __('File') }}" class="sr-only" />
+                <x-file-input
+                    id="file"
+                    name="file"
+                    class="mt-1 block w-full"
+                    placeholder="{{ __('File') }}"
+                />
+                <x-input-error :messages="$errors->get('file')" class="mt-2" />
             </div>
 
             <div class="mt-6 flex justify-end">
