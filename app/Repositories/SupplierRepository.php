@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Interfaces\SupplierRepositoryInteface;
+use App\Models\CltLayer;
 use App\Models\Supplier;
 
 class SupplierRepository implements SupplierRepositoryInteface
@@ -35,5 +36,10 @@ class SupplierRepository implements SupplierRepositoryInteface
     public function delete(Supplier $supplier)
     {
         return $supplier->delete();
+    }
+
+    public function getExport()
+    {
+        return CltLayer::with(['cltLayup', 'cltLayup.supplier'])->get();
     }
 }

@@ -21,6 +21,7 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware('auth')->resource('suppliers', SupplierController::class)->except(['create', 'show', 'edit']);
+Route::middleware('auth')->get('/suppliers/export', [SupplierController::class, 'export'])->name('suppliers.export');
 
 Route::middleware('auth')->prefix('suppliers/{supplier}')->name('suppliers.')->group(function () {
     Route::resource('layups', CltLayupController::class)->except(['create', 'show', 'edit']);

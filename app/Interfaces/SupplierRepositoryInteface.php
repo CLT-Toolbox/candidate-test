@@ -10,4 +10,5 @@ interface SupplierRepositoryInteface {
     public function create(array $details);
     public function update(Supplier $supplier, array $newDetails);
     public function delete(Supplier $supplier);
+    public function getExport();
 }

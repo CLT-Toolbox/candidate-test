@@ -5,14 +5,17 @@ namespace App\Http\Controllers;
 use App\Http\Requests\SupplierRequest;
 use App\Interfaces\SupplierRepositoryInteface;
 use App\Models\Supplier;
+use App\Services\SupplierService;
 use Illuminate\Http\Request;
 
 class SupplierController extends Controller
 {
     protected SupplierRepositoryInteface $supplierRepository;
+    protected SupplierService $supplierService;
 
-    public function __construct(SupplierRepositoryInteface $supplierRepository) {
+    public function __construct(SupplierRepositoryInteface $supplierRepository, SupplierService $supplierService) {
         $this->supplierRepository = $supplierRepository;
+        $this->supplierService = $supplierService;
     }
 
     public function index(Request $request)
@@ -43,5 +46,10 @@ class SupplierController extends Controller
         $this->supplierRepository->delete($supplier);
 
         return redirect()->route('suppliers.index');
+    }
+
+    public function export()
+    {
+        return $this->supplierService->exportToCsv();
     }
 }
