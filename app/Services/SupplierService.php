@@ -12,7 +12,7 @@ class SupplierService {
         protected SupplierRepositoryInteface $supplierRepository
     ) {}
 
-    public function exportToCsv()
+    public function exportToXlsx()
     {
         $fileName = 'supplier_export_' . Carbon::now()->format('Y_m_d_H_i_s') . '.xlsx';
         return Excel::download(new SupplierExport($this->supplierRepository), $fileName);

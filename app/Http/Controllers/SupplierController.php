@@ -50,6 +50,6 @@ class SupplierController extends Controller
 
     public function export()
     {
-        return $this->supplierService->exportToCsv();
+        return $this->supplierService->exportToXlsx();
     }
 }
