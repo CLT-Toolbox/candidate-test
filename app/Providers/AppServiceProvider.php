@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Interfaces\CltLayerRepositoryInterface;
 use App\Interfaces\CltLayupRepositoryInterface;
 use App\Interfaces\SupplierRepositoryInteface;
+use App\Repositories\CltLayerRepository;
 use App\Repositories\CltLayupRepository;
 use App\Repositories\SupplierRepository;
 use Illuminate\Pagination\Paginator;
@@ -24,6 +26,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             CltLayupRepositoryInterface::class,
             CltLayupRepository::class,
+        );
+
+        $this->app->bind(
+            CltLayerRepositoryInterface::class,
+            CltLayerRepository::class,
         );
     }
 

@@ -15,6 +15,13 @@ class CltLayer extends Model
         'angle'
     ];
 
+    protected $casts = [
+        'layer_order' => 'integer',
+        'thickness' => 'decimal:2',
+        'width' => 'decimal:2',
+        'angle' => 'decimal:2',
+    ];
+
     public function cltLayup(): BelongsTo
     {
         return $this->belongsTo(CltLayup::class, 'layup_id', 'id');
