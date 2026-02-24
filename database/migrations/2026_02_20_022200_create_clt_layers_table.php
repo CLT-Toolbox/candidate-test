@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('clt_layers', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('layup_id')->on('clt_layups')->nullable();
+            $table->foreignId('layup_id')->nullable()->constrained('clt_layups')->nullOnDelete();
             $table->integer('layer_order');
             $table->decimal('thickness');
             $table->decimal('width');

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('clt_layups', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('supplier_id')->on('suppliers')->nullable();
+            $table->foreignId('supplier_id')->nullable()->constrained('suppliers')->nullOnDelete();
             $table->string('name');
             $table->timestamps();
         });
