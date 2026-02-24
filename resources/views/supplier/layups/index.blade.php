@@ -52,7 +52,7 @@
                                         </td>
                                         <td class="px-6 py-4">
                                             <div class="flex justify-end items-center space-x-2">
-                                                <a href="{{ route('suppliers.layers.index', [$supplier->id, $layup->id]) }}">
+                                                <a href="{{ route('suppliers.layups.layers.index', [$supplier->id, $layup->id]) }}">
                                                     <x-primary-button>
                                                         {{ __('Layers') }}
                                                     </x-primary-button>
