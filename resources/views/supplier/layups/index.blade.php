@@ -9,6 +9,12 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
+                    <div class="mb-3">
+                        <a href="{{ route('suppliers.index') }}" class="inline-flex items-center text-sm text-gray-800 hover:text-gray-900 dark:text-gray-200 dark:hover:text-gray-300 hover:underline transition-colors duration-200">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                            {{ __('Back to Layups') }}
+                        </a>
+                    </div>
                     <div class="flex justify-between items-center mb-6">
                         <div class="">
                             <h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-200 pb-2">Layups List</h2>
