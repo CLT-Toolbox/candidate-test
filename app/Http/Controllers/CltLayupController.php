@@ -528,7 +528,7 @@ class CltLayupController extends Controller
                 ->with('layers')
                 ->get();
 
-            $fileName = 'layups_supplier_' . $supplierId . '.' . $format;
+            $fileName = 'layups_supplier_' . $layups[0]->supplier->name . '.' . $format;
 
             if ($format === 'json') {
                 $payload = $layups->map(function ($l) {
