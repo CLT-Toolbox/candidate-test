@@ -20,6 +20,6 @@ class CltLayup extends Model
     public function cltLayers(): HasMany
 
     {
-        return $this->hasMany(CltLayer::class);
+        return $this->hasMany(CltLayer::class, 'layup_id', 'id');
     }
 }

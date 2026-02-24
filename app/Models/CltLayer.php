@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class CltLayer extends Model
 {
     protected $fillable = [
+        'layup_id',
         'layer_order',
         'thickness',
         'width',
@@ -16,6 +17,6 @@ class CltLayer extends Model
 
     public function cltLayup(): BelongsTo
     {
-        return $this->belongsTo(CltLayup::class);
+        return $this->belongsTo(CltLayup::class, 'layup_id', 'id');
     }
 }
