@@ -9,10 +9,19 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
+                    @if (session('success'))
+                        <div x-data="{ show: true }" x-show="show" class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                            <strong class="font-bold">Success!</strong>
+                            <span class="block sm:inline">{{ session('success') }}</span>
+                            <span class="absolute top-0 bottom-0 right-0 px-4 py-3">
+                                <svg x-on:click="show = false" class="fill-current h-6 w-6 text-green-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><title>Close</title><path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/></svg>
+                            </span>
+                        </div>
+                    @endif
                     <div class="mb-3">
                         <a href="{{ route('suppliers.index') }}" class="inline-flex items-center text-sm text-gray-800 hover:text-gray-900 dark:text-gray-200 dark:hover:text-gray-300 hover:underline transition-colors duration-200">
                             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-                            {{ __('Back to Layups') }}
+                            {{ __('Back to Suppliers') }}
                         </a>
                     </div>
                     <div class="flex justify-between items-center mb-6">
@@ -142,7 +151,7 @@
 
     <!-- Import Modal -->
     <x-modal name="import-layup-modal" :show="$errors->userDeletion->isNotEmpty()" focusable>
-        <form method="post" action="{{ route('suppliers.layups.import', $supplier->id) }}" class="p-6">
+        <form method="post" action="{{ route('suppliers.layups.import', $supplier->id) }}" enctype="multipart/form-data" class="p-6">
             @csrf
             @method('post')
 

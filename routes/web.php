@@ -26,6 +26,8 @@ Route::middleware('auth')->get('/suppliers/export', [SupplierController::class, 
 Route::middleware('auth')->prefix('suppliers/{supplier}')->name('suppliers.')->group(function () {
     Route::resource('layups', CltLayupController::class)->except(['create', 'show', 'edit']);
     Route::get('/layups/export', [CltLayupController::class, 'export'])->name('layups.export');
+    Route::post('/layups/import', [CltLayupController::class, 'import'])->name('layups.import');
+    Route::post('/layups/import/resolve', [CltLayupController::class, 'resolve'])->name('layups.import.resolve');
     Route::prefix('layups/{layup}')->name('layups.')->group(function () {
         Route::resource('layers', CltLayerController::class)->except(['create', 'show', 'edit']);
     });
