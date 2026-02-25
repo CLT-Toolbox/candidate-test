@@ -29,6 +29,8 @@ Route::middleware('auth')->group(function () {
 
     // Add layups route
     Route::post("/suppliers/{supplier}/layups", [SupplierController::class, 'storeLayup'])->name('suppliers.layups.store');
+    Route::put("/suppliers/{supplier}/layups/{layup}", [SupplierController::class, 'updateLayup'])->name('suppliers.layups.update');
+    Route::delete("/suppliers/{supplier}/layups/{layup}", [SupplierController::class, 'destroyLayup'])->name('suppliers.layups.destroy');
 
     // Import/Export routes
     Route::get("/suppliers/{supplier}/export", [SupplierExportController::class, 'export'])->name('suppliers.export');

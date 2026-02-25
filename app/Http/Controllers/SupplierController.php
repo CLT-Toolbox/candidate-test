@@ -109,4 +109,61 @@ class SupplierController extends Controller
 
         return redirect()->route('suppliers.show', $supplier)->with('success', 'Layup added successfully.');
     }
+
+    /**
+     * Update an existing layup for the supplier.
+     */
+    public function updateLayup(SupplierLayoupsRequest $request, Supplier $supplier, CLT_Layup $layup)
+    {
+        if ($layup->supplier_id !== $supplier->id) {
+            abort(404);
+        }
+
+        if(!$request->validated()){
+            return redirect()->route('suppliers.show', $supplier)->withErrors($request->errors())->withInput();
+        }
+
+        DB::beginTransaction();
+
+        $checkDuplicate = CLT_Layup::where('supplier_id', $supplier->id)
+            ->where('name', 'ilike', "%$request->name%")
+            ->where('id', '!=', $layup->id)
+            ->first();
+
+        if ($checkDuplicate) {
+            DB::rollback();
+            return redirect()->route('suppliers.show', $supplier)->with('error', 'Layup with this name already exists.')->withInput();
+        }
+
+        $layup->update(['name' => $request->name]);
+
+        $layup->layers()->delete();
+
+        foreach ($request->layers as $layerData) {
+            CLT_Layer::create([
+                'layup_id' => $layup->id,
+                'layer_order' => $layerData['layer_order'],
+                'thickness' => $layerData['thickness'],
+                'width' => $layerData['width'],
+                'angle' => $layerData['angle'],
+            ]);
+        }
+        DB::commit();
+
+        return redirect()->route('suppliers.show', $supplier)->with('success', 'Layup updated successfully.');
+    }
+
+    /**
+     * Delete an existing layup for the supplier.
+     */
+    public function destroyLayup(Supplier $supplier, CLT_Layup $layup)
+    {
+        if ($layup->supplier_id !== $supplier->id) {
+            abort(404);
+        }
+
+        $layup->delete();
+
+        return redirect()->route('suppliers.show', $supplier)->with('success', 'Layup deleted successfully.');
+    }
 }
