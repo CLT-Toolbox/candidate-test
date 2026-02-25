@@ -89,8 +89,8 @@
         </div>
     </div>
 
-    <!-- Add Modal -->
-    <x-modal name="add-supplier-modal" :show="$errors->userDeletion->isNotEmpty()" focusable>
+        <!-- Add Modal -->
+    <x-modal name="add-supplier-modal" :show="$errors->any() && !old('id')" focusable>
         <form method="post" action="{{ route('suppliers.store') }}" class="p-6">
             @csrf
             @method('post')
@@ -110,6 +110,7 @@
                     name="name"
                     class="mt-1 block w-full"
                     placeholder="{{ __('Name') }}"
+                    :value="old('name')"
                 />
                 <x-input-error :messages="$errors->get('name')" class="mt-2" />
             </div>
@@ -128,10 +129,11 @@
 
     @foreach ($suppliers as $supplier)
     <!-- Edit Modal -->
-    <x-modal name="edit-supplier-modal-{{ $supplier->id }}" :show="$errors->userDeletion->isNotEmpty()" focusable>
+    <x-modal name="edit-supplier-modal-{{ $supplier->id }}" :show="$errors->any() && old('id') == $supplier->id" focusable>
         <form method="post" action="{{ route('suppliers.update', $supplier->id) }}" class="p-6">
             @csrf
             @method('patch')
+            <input type="hidden" name="supplier_id" value="{{ $supplier->id }}">
 
             <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                 {{ __('Edit Supplier') }}
@@ -169,7 +171,7 @@
     </x-modal>
 
     <!-- Delete Modal -->
-     <x-modal name="delete-supplier-modal-{{ $supplier->id }}" :show="$errors->userDeletion->isNotEmpty()" focusable>
+     <x-modal name="delete-supplier-modal-{{ $supplier->id }}" focusable>
         <form method="post" action="{{ route('suppliers.destroy', $supplier->id) }}" class="p-6">
             @csrf
             @method('delete')

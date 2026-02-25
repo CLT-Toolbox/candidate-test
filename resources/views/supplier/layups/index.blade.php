@@ -113,7 +113,7 @@
     </div>
 
     <!-- Add Modal -->
-    <x-modal name="add-layup-modal" :show="$errors->userDeletion->isNotEmpty()" focusable>
+    <x-modal name="add-layup-modal" :show="$errors->any() && !old('id')" focusable>
         <form method="post" action="{{ route('suppliers.layups.store', $supplier->id) }}" class="p-6">
             @csrf
             @method('post')
@@ -133,6 +133,7 @@
                     name="name"
                     class="mt-1 block w-full"
                     placeholder="{{ __('Name') }}"
+                    :value="old('name')"
                 />
                 <x-input-error :messages="$errors->get('name')" class="mt-2" />
             </div>
@@ -150,7 +151,7 @@
     </x-modal>
 
     <!-- Import Modal -->
-    <x-modal name="import-layup-modal" :show="$errors->userDeletion->isNotEmpty()" focusable>
+    <x-modal name="import-layup-modal" :show="$errors->any() && old('file')" focusable>
         <form method="post" action="{{ route('suppliers.layups.import', $supplier->id) }}" enctype="multipart/form-data" class="p-6">
             @csrf
             @method('post')
@@ -188,7 +189,7 @@
 
     @foreach ($layups as $layup)
     <!-- Edit Modal -->
-    <x-modal name="edit-layup-modal-{{ $layup->id }}" :show="$errors->userDeletion->isNotEmpty()" focusable>
+    <x-modal name="edit-layup-modal-{{ $layup->id }}" :show="$errors->any() && old('id') == $layup->id" focusable>
         <form method="post" action="{{ route('suppliers.layups.update', [$supplier->id, $layup->id]) }}" class="p-6">
             @csrf
             @method('patch')
@@ -209,7 +210,6 @@
                     name="name"
                     class="mt-1 block w-full"
                     :value="old('name', $layup->name)"
-                    required
                     autofocus
                     placeholder="{{ __('Name') }}"
                 />
@@ -229,7 +229,7 @@
     </x-modal>
 
     <!-- Delete Modal -->
-     <x-modal name="delete-layup-modal-{{ $layup->id }}" :show="$errors->userDeletion->isNotEmpty()" focusable>
+     <x-modal name="delete-layup-modal-{{ $layup->id }}" focusable>
         <form method="post" action="{{ route('suppliers.layups.destroy', [$supplier->id, $layup->id]) }}" class="p-6">
             @csrf
             @method('delete')

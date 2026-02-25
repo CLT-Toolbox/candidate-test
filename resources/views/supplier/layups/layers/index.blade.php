@@ -101,7 +101,7 @@
     </div>
 
     <!-- Add Modal -->
-    <x-modal name="add-layer-modal" :show="$errors->userDeletion->isNotEmpty()" focusable>
+    <x-modal name="add-layer-modal" :show="$errors->any() && !old('id')" focusable>
         <form method="post" action="{{ route('suppliers.layups.layers.store', [$supplier->id, $layup->id]) }}" class="p-6">
             @csrf
             @method('post')
@@ -113,18 +113,6 @@
             <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
                 {{ __('Masukkan data untuk layer baru.') }}
             </p>
-
-            {{-- <div class="mt-6">
-                <x-input-label for="layer_order" value="{{ __('Layer order') }}" class="sr-only" />
-                <x-text-input
-                    id="layer_order"
-                    type="number"
-                    name="layer_order"
-                    class="mt-1 block w-full"
-                    placeholder="{{ __('Layer Order') }}"
-                />
-                <x-input-error :messages="$errors->get('layer_order')" class="mt-2" />
-            </div> --}}
             <div class="mt-6">
                 <x-input-label for="thickness" value="{{ __('Thickness') }}" class="sr-only" />
                 <x-text-input
@@ -133,6 +121,7 @@
                     name="thickness"
                     class="mt-1 block w-full"
                     placeholder="{{ __('Thickness') }}"
+                    :value="old('thickness')"
                 />
                 <x-input-error :messages="$errors->get('thickness')" class="mt-2" />
             </div>
@@ -144,6 +133,7 @@
                     name="width"
                     class="mt-1 block w-full"
                     placeholder="{{ __('Width') }}"
+                    :value="old('width')"
                 />
                 <x-input-error :messages="$errors->get('width')" class="mt-2" />
             </div>
@@ -155,6 +145,7 @@
                     name="angle"
                     class="mt-1 block w-full"
                     placeholder="{{ __('Angle') }}"
+                    :value="old('angle')"
                 />
                 <x-input-error :messages="$errors->get('angle')" class="mt-2" />
             </div>
@@ -173,7 +164,7 @@
 
     @foreach ($layers as $layer)
     <!-- Edit Modal -->
-    <x-modal name="edit-layer-modal-{{ $layer->id }}" :show="$errors->userDeletion->isNotEmpty()" focusable>
+    <x-modal name="edit-layer-modal-{{ $layer->id }}" :show="$errors->any() && old('id') == $layer->id" focusable>
         <form method="post" action="{{ route('suppliers.layups.layers.update', [$supplier->id, $layup->id, $layer->id]) }}" class="p-6">
             @csrf
             @method('put')
@@ -241,7 +232,7 @@
     </x-modal>
 
     <!-- Delete Modal -->
-     <x-modal name="delete-layer-modal-{{ $layer->id }}" :show="$errors->userDeletion->isNotEmpty()" focusable>
+     <x-modal name="delete-layer-modal-{{ $layer->id }}" focusable>
         <form method="post" action="{{ route('suppliers.layups.layers.destroy', [$supplier->id, $layup->id, $layer->id]) }}" class="p-6">
             @csrf
             @method('delete')
