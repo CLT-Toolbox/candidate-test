@@ -6,7 +6,7 @@
 <body>
     <h1>Add Layer - {{ $layup->name }}</h1>
     
-    <form action="{{ route('layups.layers.store', $layup) }}" method="POST">
+    <form action="{{ route('dashboard.layups.layers.store', $layup) }}" method="POST">
         @csrf
         <input type="number" name="layer_order" placeholder="Layer Order" required>
         <input type="number" step="0.01" name="thickness" placeholder="Thickness" required>
@@ -15,6 +15,6 @@
         <button type="submit">Save</button>
     </form>
     
-    <a href="{{ route('layups.show', $layup) }}">Back</a>
+    <a href="{{ route('dashboard.layups.show', $layup) }}">Back</a>
 </body>
 </html>

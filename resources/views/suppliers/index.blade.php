@@ -7,7 +7,7 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     
                     @if(session('success'))
@@ -40,14 +40,16 @@
                         <tbody>
                             @foreach($suppliers as $supplier)
                             <tr>
-                                <td class="border px-4 text-white py-2">{{ $supplier->id }}</td>
-                                <td class="border px-4 text-white py-2">{{ $supplier->name }}</td>
-                                <td class="border px-4 text-white py-2">{{ $supplier->layups->count() }}</td>
-                                <td class="border px-4 text-white py-2">
+                                <td class="border px-4 py-2">{{ $supplier->id }}</td>
+                                <td class="border px-4 py-2">{{ $supplier->name }}</td>
+                                <td class="border px-4 py-2">{{ $supplier->layups->count() }}</td>
+                                <td class="border px-4 py-2">
                                     <a href="{{ route('dashboard.suppliers.show', $supplier) }}" 
                                        class="text-blue-600 hover:underline">View</a>
                                     <a href="{{ route('dashboard.suppliers.edit', $supplier) }}" 
                                        class="text-yellow-600 hover:underline ml-2">Edit</a>
+                                    <a href="{{ route('dashboard.suppliers.export', $supplier) }}" 
+                                       class="text-green-600 hover:underline ml-2">Export</a>
                                     <form action="{{ route('dashboard.suppliers.destroy', $supplier) }}" 
                                           method="POST" style="display:inline;"
                                           onsubmit="return confirm('Are you sure?')">

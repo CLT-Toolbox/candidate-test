@@ -17,13 +17,14 @@ Route::middleware('auth')->group(function () {
     })->name('dashboard');
     
     Route::prefix('dashboard')->name('dashboard.')->group(function () {
-        Route::resource('suppliers', SupplierController::class);
         Route::get('suppliers/import', [SupplierController::class, 'importForm'])
             ->name('suppliers.import.form');
         Route::post('suppliers/import', [SupplierController::class, 'import'])
             ->name('suppliers.import');
         Route::get('suppliers/{supplier}/export', [SupplierController::class, 'export'])
             ->name('suppliers.export');
+        
+        Route::resource('suppliers', SupplierController::class);
         Route::resource('suppliers.layups', LayupController::class)->shallow();
         Route::resource('layups.layers', LayerController::class)->shallow();
     });

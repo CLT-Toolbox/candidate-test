@@ -6,12 +6,12 @@
 <body>
     <h1>Add Supplier</h1>
     
-    <form action="{{ route('suppliers.store') }}" method="POST">
+    <form action="{{ route('dashboard.suppliers.store') }}" method="POST">
         @csrf
         <input type="text" name="name" placeholder="Supplier Name" required>
         <button type="submit">Save</button>
     </form>
     
-    <a href="{{ route('suppliers.index') }}">Back</a>
+    <a href="{{ route('dashboard.suppliers.index') }}">Back</a>
 </body>
 </html>
