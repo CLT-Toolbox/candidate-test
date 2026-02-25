@@ -51,7 +51,7 @@ class SupplierFormRequest extends FormRequest
     {
         return [
             'name.required' => 'Supplier name is required.',
-            'name.unique' => 'This supplier name already exists.',
+            'name.unique' => 'The supplier name ":input" already exists. Please choose a different name.',
             'name.max' => 'Supplier name cannot exceed 255 characters.',
         ];
     }

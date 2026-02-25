@@ -19,8 +19,28 @@ class CltLayup extends Model
         return $this->belongsTo(Supplier::class);
     }
 
+
+    /**
+     * Get the layers for the layup.
+     */
     public function layers()
     {
-        return $this->hasMany(CltLayer::class, 'layup_id');
+        return $this->hasMany(CltLayer::class, 'layup_id')->orderBy('layer_order');
+    }
+
+    /**
+     * Get the total ply count (calculated from layers).
+     */
+    public function getPlyCountAttribute()
+    {
+        return $this->layers()->count();
+    }
+
+    /**
+     * Get the total thickness (calculated from layers).
+     */
+    public function getTotalThicknessAttribute()
+    {
+        return $this->layers()->sum('thickness');
     }
 }

@@ -18,7 +18,7 @@
                     </x-nav-link>
                 </div>
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('suppliers.index')" :active="request()->routeIs('suppliers.index')">
+                    <x-nav-link :href="route('suppliers.index')" :active="request()->routeIs('suppliers.*')">
                         {{ __('Suppliers') }}
                     </x-nav-link>
                 </div>
@@ -86,6 +86,10 @@
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
         </div>
+            <div class="space-y-1 pb-3 pt-2">
+                <x-responsive-nav-link :href="route('suppliers.index')" :active="request()->routeIs('suppliers.*')">
+                    {{ __('Suppliers') }}
+                </x-responsive-nav-link>
 
         <!-- Responsive Settings Options -->
         <div class="border-t border-gray-200 pb-1 pt-4 dark:border-gray-600">

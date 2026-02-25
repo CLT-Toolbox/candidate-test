@@ -2,21 +2,22 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <div>
-                <h2 class="font-ascender text-xl font-semibold leading-tight text-[#262b2f] dark:text-gray-200">
-                    {{ __('Suppliers') }}
-                </h2>
-                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    {{ __('Manage timber suppliers and material sourcing.') }}
-                </p>
+                <nav class="mb-2 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                    <a href="{{ route('suppliers.index') }}" class="hover:text-gray-700 dark:hover:text-gray-300">
+                        {{ __('Suppliers') }}
+                    </a>
+                    <span>/</span>
+                    <a href="{{ route('suppliers.layups', $supplier->id) }}" class="hover:text-gray-700 dark:hover:text-gray-300">
+                        {{ $supplier->name }}
+                    </a>
+                    <span>/</span>
+                    <span class="text-gray-900 dark:text-gray-100">{{ $layup->name }}</span>
+                </nav>
             </div>
-            <button x-data @click="window.dispatchEvent(new CustomEvent('open-create-modal'))"
-                class="flex items-center gap-2 rounded-lg bg-[#3f7a5c] px-4 py-2 font-medium text-white transition hover:bg-[#2d5b45]">
-                <span>+</span> {{ __('Add Supplier') }}
-            </button>
         </div>
     </x-slot>
 
-    <div class="py-1" x-data="supplierManager()" @open-create-modal.window="openCreateModal()"
+    <div class="py-1" x-data="layerManager()" @open-create-modal.window="openCreateModal()"
         @open-edit-modal.window="openEditModal($event.detail)"
         @open-delete-modal.window="openDeleteModal($event.detail)">
 
@@ -27,47 +28,76 @@
                     {{ session('success') }}
                 </div>
             @endif
-            @error('name')
-                <div
-                    class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
-                    {{ $message }}
-                </div>
-            @enderror
 
-            {{-- Search and Filter Bar --}}
-            <div class="mb-2 border-b border-gray-100 pb-4 dark:border-gray-700">
+            <div class="mb-4">
+    <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+
+        <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+
+            <!-- LEFT SIDE -->
+            <div>
+                <div class="flex items-center gap-3">
+                    <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+                        Layup Specification: L-{{ $layup->id }}
+                    </h2>
+
+
+                </div>
+
+                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                    Standard {{ $layup->ply_count ?? 0 }}-layer panel for residential structural walls.
+                </p>
+            </div>
+
+            <!-- RIGHT SIDE -->
+            <div class="flex flex-wrap divide-x divide-gray-200 dark:divide-gray-700">
+
+
+
+
+                <div class="px-6">
+                    <p class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                        Total Thickness
+                    </p>
+                    <p class="mt-1 font-semibold text-[#3f7a5c]">
+                        {{ number_format($layup->total_thickness, 0) }}mm
+                    </p>
+                </div>
+
+                <div class="px-6">
+                    <p class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                        Total Layers
+                    </p>
+                    <p class="mt-1 font-semibold text-[#3f7a5c]">
+                        {{ $layup->ply_count ?? 0 }} Layers
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+            {{-- Actions Bar --}}
+            <div class="mb-4 border-b border-[#E5E7EB] pb-4 dark:border-gray-700">
                 <div class="flex justify-between gap-2">
                     <div class="max-w-xs flex-1">
-                        <form method="GET" action="{{ route('suppliers.index') }}" id="searchForm">
-                            <div class="relative">
-                                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                    <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
-                                </div>
-                                <input type="text" name="search"
-                                    placeholder="{{ __('Search suppliers by name...') }}"
-                                    value="{{ request('search') }}"
-                                    class="w-full rounded-md border border-gray-300 bg-white py-1.5 pl-10 pr-3 text-sm text-gray-900 placeholder-gray-400 transition focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100" />
-                            </div>
-                        </form>
+                        <h1 class="pt-1 text-2xl font-semibold text-gray-900 dark:text-gray-100">
+                            {{ __('Layers Composition') }}
+                        </h1>
                     </div>
                     <div class="flex gap-2">
-                        <button @click="$dispatch('open-modal', 'filter-modal')"
-                            class="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
-                            {{ __('Filter') }}
-                        </button>
-                        <button
-                            class="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
-                            {{ __('Export') }}
+                        
+                        <button x-data @click="window.dispatchEvent(new CustomEvent('open-create-modal'))"
+                            class="flex items-center gap-2 rounded-lg bg-[#3f7a5c] px-4 py-2 font-medium text-white transition hover:bg-[#2d5b45]">
+                            <span>+</span> {{ __('Add Layer') }}
                         </button>
                     </div>
                 </div>
             </div>
 
-            {{-- Suppliers Table --}}
+            {{-- Layers Table --}}
             <div
                 class="overflow-hidden border border-[#D1D5DB] bg-white shadow-sm sm:rounded-lg dark:border-gray-700 dark:bg-gray-800">
                 <div class="overflow-x-auto">
@@ -76,15 +106,19 @@
                             <tr class="border-b border-gray-200 dark:border-gray-700">
                                 <th
                                     class="px-6 py-4 text-left text-[11px] font-semibold uppercase tracking-widest text-[#4B5563] dark:text-gray-400">
-                                    {{ __('Name') }}
+                                    {{ __('Layer Order') }}
                                 </th>
                                 <th
                                     class="px-6 py-4 text-left text-[11px] font-semibold uppercase tracking-widest text-[#4B5563] dark:text-gray-400">
-                                    {{ __('Total Layups') }}
+                                    {{ __('Thickness') }}
                                 </th>
                                 <th
                                     class="px-6 py-4 text-left text-[11px] font-semibold uppercase tracking-widest text-[#4B5563] dark:text-gray-400">
-                                    {{ __('Created At') }}
+                                    {{ __('Width') }}
+                                </th>
+                                <th
+                                    class="px-6 py-4 text-left text-[11px] font-semibold uppercase tracking-widest text-[#4B5563] dark:text-gray-400">
+                                    {{ __('Angle') }}
                                 </th>
                                 <th
                                     class="px-6 py-4 text-right text-[11px] font-semibold uppercase tracking-widest text-[#4B5563] dark:text-gray-400">
@@ -93,36 +127,28 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse ($suppliers as $supplier)
-                                <tr class="cursor-pointer border-b border-gray-100 transition-colors duration-150 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700/50"
-                                    onclick="window.location.href='{{ route('suppliers.layups', $supplier->id) }}'">
+                            @forelse ($layers as $layer)
+                                <tr
+                                    class="border-b border-gray-100 transition-colors duration-150 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700/50">
                                     <td class="px-6 py-4">
-                                        <div class="flex items-center gap-3">
-                                            <div
-                                                class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-blue-50 text-sm font-semibold text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
-                                                {{ strtoupper(substr($supplier->name, 0, 2)) }}
-                                            </div>
-                                            <div>
-                                                <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                                                    {{ $supplier->name }}
-                                                </p>
-                                                <p class="font-mono text-xs text-gray-500 dark:text-gray-400">
-                                                    ID: SUP-{{ str_pad($supplier->id, 4, '0', STR_PAD_LEFT) }}
-                                                </p>
-                                            </div>
-                                        </div>
+                                        <span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#3f7a5c] text-sm font-bold text-white">
+                                            {{ $layer->layer_order }}
+                                        </span>
                                     </td>
-                                    <td class="px-6 py-4 text-sm font-semibold text-gray-900 dark:text-gray-100">
-                                        {{ $supplier->layups_count }}
+                                    <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100">
+                                        {{ number_format($layer->thickness, 2) }}mm
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
-                                        {{ $supplier->created_at->format('M d, Y') }}
+                                        {{ number_format($layer->width, 2) }}mm
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                                        {{ number_format($layer->angle, 1) }}°
                                     </td>
                                     <td class="px-6 py-4 text-right">
                                         <div class="flex items-center justify-end gap-2">
                                             <button
                                                 class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-600 transition-all duration-150 hover:border-gray-400 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-400 dark:hover:border-gray-500 dark:hover:bg-gray-700"
-                                                onclick="event.stopPropagation(); window.dispatchEvent(new CustomEvent('open-edit-modal', { detail: { id: {{ $supplier->id }}, name: '{{ addslashes($supplier->name) }}' } }))">
+                                                @click="window.dispatchEvent(new CustomEvent('open-edit-modal', { detail: { id: {{ $layer->id }}, layer_order: {{ $layer->layer_order }}, thickness: {{ $layer->thickness }}, width: {{ $layer->width }}, angle: {{ $layer->angle }} } }))">
                                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-0.5 -0.5 16 16"
                                                     fill="none" height="25" width="16"
                                                     class="text-gray-700 dark:text-gray-300">
@@ -134,7 +160,7 @@
                                             </button>
                                             <button type="button"
                                                 class="rounded-lg border border-red-300 px-3 py-1.5 text-sm text-red-600 transition-all duration-150 hover:border-red-400 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:border-red-600 dark:hover:bg-red-900/30"
-                                                onclick="event.stopPropagation(); window.dispatchEvent(new CustomEvent('open-delete-modal', { detail: { id: {{ $supplier->id }}, name: '{{ addslashes($supplier->name) }}' } }))">
+                                                @click="window.dispatchEvent(new CustomEvent('open-delete-modal', { detail: { id: {{ $layer->id }}, layer_order: {{ $layer->layer_order }} } }))">
                                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none"
                                                     viewBox="0 0 24 24" height="24" width="16"
                                                     class="text-gray-700 dark:text-gray-300">
@@ -161,8 +187,8 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
-                                        {{ __('No suppliers found.') }}
+                                    <td colspan="5" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                                        {{ __('No layers found for this layup.') }}
                                     </td>
                                 </tr>
                             @endforelse
@@ -174,12 +200,12 @@
                 <div
                     class="flex items-center justify-between border-t border-gray-200 bg-white px-6 py-3 dark:border-gray-700 dark:bg-gray-800">
                     <p class="text-sm text-gray-700 dark:text-gray-400">
-                        {{ __('Showing') }} {{ $suppliers->firstItem() ?? 0 }} {{ __('to') }}
-                        {{ $suppliers->lastItem() ?? 0 }} {{ __('of') }} {{ $suppliers->total() }}
+                        {{ __('Showing') }} {{ $layers->firstItem() ?? 0 }} {{ __('to') }}
+                        {{ $layers->lastItem() ?? 0 }} {{ __('of') }} {{ $layers->total() }}
                         {{ __('results') }}
                     </p>
                     <div class="flex gap-2">
-                        @if ($suppliers->onFirstPage())
+                        @if ($layers->onFirstPage())
                             <button disabled
                                 class="cursor-not-allowed rounded-md border border-gray-300 bg-white px-2 py-1 text-gray-400 dark:border-gray-600 dark:bg-gray-700">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" class="h-4 w-4"
@@ -189,7 +215,7 @@
                                 </svg>
                             </button>
                         @else
-                            <a href="{{ $suppliers->previousPageUrl() }}"
+                            <a href="{{ $layers->previousPageUrl() }}"
                                 class="rounded-md border border-gray-300 bg-white px-2 py-1 text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" class="h-4 w-4"
                                     fill="currentColor">
@@ -199,8 +225,8 @@
                             </a>
                         @endif
 
-                        @if ($suppliers->hasMorePages())
-                            <a href="{{ $suppliers->nextPageUrl() }}"
+                        @if ($layers->hasMorePages())
+                            <a href="{{ $layers->nextPageUrl() }}"
                                 class="rounded-md border border-gray-300 bg-white px-2 py-1 text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" class="h-4 w-4"
                                     fill="currentColor">
@@ -223,47 +249,59 @@
             </div>
 
             {{-- Include Modals --}}
-            @include('suppliers.partials.form-modal')
-            @include('suppliers.partials.delete-modal')
-            @include('suppliers.partials.filter-modal')
+            @include('layers.partials.form-modal')
+            @include('layers.partials.delete-modal')
 
             {{-- Alpine.js Component --}}
             <script>
-                function supplierManager() {
+                function layerManager() {
                     return {
                         isEditing: false,
                         formData: {
-                            name: ''
+                            layer_order: '',
+                            thickness: '',
+                            width: '',
+                            angle: ''
                         },
-                        formAction: '{{ route('suppliers.store') }}',
+                        formAction: '{{ route('layups.layers.store', $layup->id) }}',
                         deleteData: {
                             id: null,
-                            name: ''
+                            layer_order: ''
                         },
                         deleteAction: '',
 
                         openCreateModal() {
                             this.isEditing = false;
-                            this.formData.name = '';
-                            this.formAction = '{{ route('suppliers.store') }}';
-                            this.$dispatch('open-modal', 'supplier-form');
+                            this.formData = {
+                                layer_order: '',
+                                thickness: '',
+                                width: '',
+                                angle: ''
+                            };
+                            this.formAction = '{{ route('layups.layers.store', $layup->id) }}';
+                            this.$dispatch('open-modal', 'layer-form');
                         },
 
                         openEditModal(data) {
                             this.isEditing = true;
-                            this.formData.name = data.name;
-                            this.formAction = `/suppliers/${data.id}`;
-                            this.$dispatch('open-modal', 'supplier-form');
+                            this.formData = {
+                                layer_order: data.layer_order,
+                                thickness: data.thickness,
+                                width: data.width,
+                                angle: data.angle
+                            };
+                            this.formAction = `/layups/{{ $layup->id }}/layers/${data.id}`;
+                            this.$dispatch('open-modal', 'layer-form');
                         },
 
                         closeModal() {
-                            this.$dispatch('close-modal', 'supplier-form');
+                            this.$dispatch('close-modal', 'layer-form');
                         },
 
                         openDeleteModal(data) {
                             this.deleteData.id = data.id;
-                            this.deleteData.name = data.name;
-                            this.deleteAction = `/suppliers/${data.id}`;
+                            this.deleteData.layer_order = data.layer_order;
+                            this.deleteAction = `/layups/{{ $layup->id }}/layers/${data.id}`;
                             this.$dispatch('open-modal', 'delete-confirmation');
                         },
 

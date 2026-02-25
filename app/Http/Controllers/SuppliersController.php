@@ -60,7 +60,7 @@ class SuppliersController extends Controller
     {
         $supplier->update($request->validated());
 
-        return redirect()->route('suppliers.index')
+        return back()
             ->with('success', 'Supplier updated successfully.');
     }
 

@@ -1,0 +1,130 @@
+[
+  {
+    "name": "CLT-5-150-L",
+    "layers": [
+      {
+        "layer_order": 1,
+        "thickness": 75,
+        "width": 150,
+        "angle": 0
+      },
+      {
+        "layer_order": 2,
+        "thickness": 35,
+        "width": 150,
+        "angle": 90
+      },
+      {
+        "layer_order": 3,
+        "thickness": 45,
+        "width": 150,
+        "angle": 0
+      },
+      {
+        "layer_order": 4,
+        "thickness": 35,
+        "width": 150,
+        "angle": 90
+      },
+      {
+        "layer_order": 5,
+        "thickness": 40,
+        "width": 150,
+        "angle": 0
+      }
+    ]
+  },
+  {
+    "name": "CLT-3-120-S",
+    "layers": [
+      {
+        "layer_order": 1,
+        "thickness": 45,
+        "width": 120,
+        "angle": 0
+      },
+      {
+        "layer_order": 2,
+        "thickness": 40,
+        "width": 120,
+        "angle": 90
+      },
+      {
+        "layer_order": 3,
+        "thickness": 45,
+        "width": 120,
+        "angle": 0
+      }
+    ]
+  },
+  {
+    "name": "CLT-7-200-H",
+    "layers": [
+      {
+        "layer_order": 1,
+        "thickness": 30,
+        "width": 200,
+        "angle": 0
+      },
+      {
+        "layer_order": 2,
+        "thickness": 25,
+        "width": 200,
+        "angle": 90
+      },
+      {
+        "layer_order": 3,
+        "thickness": 30,
+        "width": 200,
+        "angle": 0
+      },
+      {
+        "layer_order": 4,
+        "thickness": 25,
+        "width": 200,
+        "angle": 90
+      },
+      {
+        "layer_order": 5,
+        "thickness": 30,
+        "width": 200,
+        "angle": 0
+      },
+      {
+        "layer_order": 6,
+        "thickness": 25,
+        "width": 200,
+        "angle": 90
+      },
+      {
+        "layer_order": 7,
+        "thickness": 30,
+        "width": 200,
+        "angle": 0
+      }
+    ]
+  },
+  {
+    "name": "CLT-3-100-std",
+    "layers": [
+      {
+        "layer_order": 1,
+        "thickness": 35,
+        "width": 100,
+        "angle": 0
+      },
+      {
+        "layer_order": 2,
+        "thickness": 30,
+        "width": 100,
+        "angle": 90
+      },
+      {
+        "layer_order": 3,
+        "thickness": 35,
+        "width": 100,
+        "angle": 0
+      }
+    ]
+  }
+]
