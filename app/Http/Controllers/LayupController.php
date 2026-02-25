@@ -26,7 +26,7 @@ class LayupController extends Controller
         ]);
 
         $supplier->layups()->create($validated);
-        return redirect()->route('suppliers.show', $supplier)->with('success', 'Layup created!');
+        return redirect()->route('dashboard.suppliers.show', $supplier)->with('success', 'Layup created!');
     }
 
     public function show(CltLayup $layup)
@@ -47,13 +47,13 @@ class LayupController extends Controller
         ]);
 
         $layup->update($validated);
-        return redirect()->route('layups.show', $layup)->with('success', 'Layup updated!');
+        return redirect()->route('dashboard.layups.show', $layup)->with('success', 'Layup updated!');
     }
 
     public function destroy(CltLayup $layup)
     {
         $supplier = $layup->supplier;
         $layup->delete();
-        return redirect()->route('suppliers.show', $supplier)->with('success', 'Layup deleted!');
+        return redirect()->route('dashboard.suppliers.show', $supplier)->with('success', 'Layup deleted!');
     }
 }

@@ -8,7 +8,7 @@
     <p>Supplier: {{ $layup->supplier->name }}</p>
     
     <h2>Layers</h2>
-    <a href="{{ route('layups.layers.create', $layup) }}">Add Layer</a>
+    <a href="{{ route('dashboard.layups.layers.create', $layup) }}">Add Layer</a>
     
     <table border="1" cellpadding="10">
         <tr>
@@ -28,6 +28,6 @@
     </table>
     
     <br>
-    <a href="{{ route('suppliers.show', $layup->supplier) }}">Back to Supplier</a>
+    <a href="{{ route('dashboard.suppliers.show', $layup->supplier) }}">Back to Supplier</a>
 </body>
 </html>
