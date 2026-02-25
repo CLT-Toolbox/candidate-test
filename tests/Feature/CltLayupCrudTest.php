@@ -22,6 +22,15 @@ class CltLayupCrudTest extends TestCase
         $response->assertOk();
     }
 
+    public function test_not_login_user_cannot_access_layup_detail_screen()
+    {
+        $s = Supplier::create(['name' => 'LS3', 'email' => 'ls3@example.com', 'address' => 'A', 'is_active' => true]);
+        $layup = CltLayups::create(['name' => 'LX', 'supplier_id' => $s->id, 'status' => 1]);
+
+        $response = $this->get('/clt-layups/' . $layup->id);
+        $response->assertRedirect('/login');
+    } 
+
     public function test_store_validates_input()
     {
         $user = User::factory()->create();

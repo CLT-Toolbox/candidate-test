@@ -21,6 +21,20 @@ class SupplierCrudTest extends TestCase
         $response->assertOk();
     }
 
+    public function test_not_login_user_cannot_access_supplier_page()
+    {
+        $response = $this->get('/suppliers');
+        $response->assertRedirect('/login');
+    }
+
+    public function test_not_login_user_cannot_access_supplier_detail_page()
+    {
+        $s = Supplier::create(['name' => 'S1','email' => 's1@example.com','address' => 'Addr','is_active' => true]);
+        $response = $this->get('/suppliers/' . $s->id);
+        $response->assertRedirect('/login');
+    }
+
+
     public function test_supplier_show_page_can_be_rendered()
     {
         $user = User::factory()->create();
