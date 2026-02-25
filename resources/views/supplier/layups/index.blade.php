@@ -24,11 +24,29 @@
                             {{ __('Back to Suppliers') }}
                         </a>
                     </div>
-                    <div class="flex justify-between items-center mb-6">
-                        <div class="">
-                            <h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-200 pb-2">Layups List</h2>
-                            <p>Supplier : {{ $supplier->name }}</p>
-                        </div>
+                    <h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-200 pb-2">Layups List</h2>
+                    <p>Supplier : {{ $supplier->name }}</p>
+                    <div class="flex justify-between items-center mt-4">
+                        <form action="{{ route('suppliers.layups.index', $supplier->id) }}" method="GET" class="flex items-center space-x-2">
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                </div>
+                                <x-text-input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama layup..." class="pl-10 w-64 text-sm" />
+                            </div>
+
+                            <x-secondary-button type="submit" class="py-2">
+                                {{ __('Cari') }}
+                            </x-secondary-button>
+
+                            @if(request('search'))
+                                <a href="{{ route('suppliers.layups.index', $supplier->id) }}" class="text-sm text-gray-500 hover:text-gray-700 underline">
+                                    {{ __('Reset') }}
+                                </a>
+                            @endif
+                        </form>
                         <div class="flex space-x-2">
                             <x-primary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'add-layup-modal')">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
