@@ -144,7 +144,7 @@
             class="p-6"
         >
             @csrf
-            <input type="hidden" name="_method" x-show="isEdit" value="PUT"></input>
+            <input type="hidden" name="_method" x-show="isEdit" :value="isEdit ? 'PUT' : 'POST'"></input>
             <h3 class="text-lg font-semibold mb-4" x-text="isEdit ? 'Edit Layup' : 'Add New Layup'"></h3>
 
             <div class="mb-4">
