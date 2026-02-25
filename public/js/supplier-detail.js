@@ -264,7 +264,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const importForm = document.getElementById('importForm');
     const conflictModalBackdrop = document.getElementById('conflictModalBackdrop');
     const conflictModalContainer = document.getElementById('conflictModalContainer');
-    let conflictState = { conflicts: [], to_update: [], to_create: [], decisions: [], currentIndex: 0, fileName: '' };
+    let conflictState = { conflicts: [], to_update: [], to_create: [], decisions: [], currentIndex: 0, fileName: '', resolvedConflicts: [] };
 
     function openConflictModal() {
         conflictModalBackdrop.classList.remove('hidden');
@@ -353,10 +353,10 @@ document.addEventListener("DOMContentLoaded", function () {
         list.innerHTML = '';
         resolvedList.innerHTML = '';
         
-        // Count conflicts and show count
+        // Count remaining unresolved conflicts
         conflictCount.textContent = `(${conflictState.conflicts.length})`;
         
-        // Render active conflicts
+        // Render unresolved conflicts
         conflictState.conflicts.forEach((c, idx) => {
             const li = document.createElement('li');
             const isActive = idx === conflictState.currentIndex;
@@ -378,25 +378,27 @@ document.addEventListener("DOMContentLoaded", function () {
             list.appendChild(li);
         });
         
-        // Render to_update items as resolved
-        if (conflictState.to_update && conflictState.to_update.length > 0) {
+        // Render resolved conflicts + to_update items as resolved
+        const allResolved = [...conflictState.resolvedConflicts, ...(conflictState.to_update || [])];
+        
+        if (allResolved.length > 0) {
             resolvedSection.classList.remove('hidden');
-            conflictState.to_update.forEach((t, idx) => {
+            allResolved.forEach((item, idx) => {
                 const conflictsCount = (conflictState.conflicts || []).length;
                 const itemIndex = conflictsCount + idx;
                 const isActive = itemIndex === conflictState.currentIndex;
                 const li = document.createElement('li');
-                li.className = `flex items-center gap-2 p-3 rounded-lg text-sm cursor-pointer transition-colors ${
+                li.className = `flex items-center gap-2 p-3 rounded-lg text-sm cursor-pointer transition-colors animate-fadeIn ${
                     isActive ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-50 border border-transparent'
                 }`;
                 
                 // Green checkmark indicator
                 const check = document.createElement('span');
-                check.innerHTML = '<svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
+                check.innerHTML = '<svg class="w-4 h-4 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
                 
                 const text = document.createElement('span');
                 text.className = isActive ? 'text-gray-900 font-medium' : 'text-gray-700';
-                text.textContent = t.incoming.name || '(no name)';
+                text.textContent = item.incoming?.name || item.name || '(no name)';
                 
                 li.appendChild(check);
                 li.appendChild(text);
@@ -412,11 +414,34 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    function updateDecisionButtons(currentDecision) {
+        const keepBtn = document.getElementById('keepExistingBtn');
+        const acceptBtn = document.getElementById('acceptIncomingBtn');
+        
+        // Reset all buttons
+        keepBtn.className = 'flex items-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-sm font-medium';
+        acceptBtn.className = 'flex items-center gap-2 px-4 py-2 bg-green-900 text-white rounded-md hover:bg-green-800 transition-colors text-sm font-medium';
+        
+        // Clear existing SVG
+        keepBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"/></svg><span>Keep Existing</span>';
+        acceptBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span>Accept New</span>';
+        
+        // Apply styling based on current decision
+        if (currentDecision === 'keep') {
+            keepBtn.className = 'flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-900 border border-blue-300 rounded-md ring-2 ring-blue-400 transition-colors text-sm font-medium';
+            keepBtn.innerHTML = '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg><span>Keep Existing</span>';
+        } else if (currentDecision === 'accept') {
+            acceptBtn.className = 'flex items-center gap-2 px-4 py-2 bg-green-700 text-white border border-green-800 rounded-md ring-2 ring-green-400 transition-colors text-sm font-medium';
+            acceptBtn.innerHTML = '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg><span>Accept New</span>';
+        }
+    }
+
     function renderCurrentConflict() {
-        // combined count = conflicts + to_update
+        // combined count = unresolved conflicts + resolved conflicts + to_update
         const conflictsCount = (conflictState.conflicts || []).length;
+        const resolvedConflictsCount = (conflictState.resolvedConflicts || []).length;
         const toUpdateCount = (conflictState.to_update || []).length;
-        const total = conflictsCount + toUpdateCount;
+        const total = conflictsCount + resolvedConflictsCount + toUpdateCount;
         const pager = document.getElementById('conflictPager');
         const fileName = conflictState.fileName || '';
         
@@ -443,14 +468,16 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        // determine whether current index points to a conflict or a to_update item
+        // Determine whether current index points to a conflict, resolved conflict, or to_update item
         let currentItem = null;
-        let isUpdateItem = false;
-        if (conflictState.currentIndex < conflictsCount) {
-            currentItem = conflictState.conflicts[conflictState.currentIndex];
+        const idx = conflictState.currentIndex;
+        
+        if (idx < conflictsCount) {
+            currentItem = conflictState.conflicts[idx];
+        } else if (idx < conflictsCount + resolvedConflictsCount) {
+            currentItem = conflictState.resolvedConflicts[idx - conflictsCount];
         } else {
-            isUpdateItem = true;
-            currentItem = conflictState.to_update[conflictState.currentIndex - conflictsCount];
+            currentItem = conflictState.to_update[idx - conflictsCount - resolvedConflictsCount];
         }
         
         // Update title and metadata
@@ -466,22 +493,24 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         incomingMetadata.textContent = 'Source: Line 34 in CSV';
 
-        let ex = null, inc = null;
-        if (isUpdateItem) {
-            ex = currentItem.existing;
-            inc = currentItem.incoming;
-        } else {
-            ex = currentItem.existing;
-            inc = currentItem.incoming;
-        }
+        const ex = currentItem.existing;
+        const inc = currentItem.incoming;
 
         existingPanel.appendChild(renderLayupSummary(ex));
         incomingPanel.appendChild(renderLayupSummary(inc, true, ex));
 
+        // Get current decision for this item
+        const currentDecision = conflictState.decisions[conflictState.currentIndex]?.action || null;
+        
+        // Update button states with visual indicators
+        updateDecisionButtons(currentDecision);
+
         // Wire up buttons
         document.getElementById('keepExistingBtn').onclick = () => setDecisionForCurrent('keep');
         document.getElementById('acceptIncomingBtn').onclick = () => setDecisionForCurrent('accept');
-        document.getElementById('duplicateBtn').onclick = () => setDecisionForCurrent('duplicate');
+        if (document.getElementById('duplicateBtn')) {
+            document.getElementById('duplicateBtn').onclick = () => setDecisionForCurrent('duplicate');
+        }
         document.getElementById('prevBtn').onclick = prevConflict;
         document.getElementById('nextBtn').onclick = nextConflict;
         document.getElementById('applyDecisionsBtn').onclick = applyDecisions;
@@ -572,23 +601,43 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function setDecisionForCurrent(action) {
         const idx = conflictState.currentIndex;
+        const conflictsCount = (conflictState.conflicts || []).length;
+        const toUpdateCount = (conflictState.to_update || []).length;
+        const combinedTotal = conflictsCount + toUpdateCount;
+        
+        // Determine if current index points to a conflict or to_update item
+        let isConflictItem = idx < conflictsCount;
+        
         if (!conflictState.decisions[idx]) {
-            // If decisions array shorter, try to find matching by existing id
-            // but safest is to extend decisions to cover index
             while (conflictState.decisions.length <= idx) {
                 conflictState.decisions.push({ action: 'keep' });
             }
         }
-            conflictState.decisions[idx].action = action;
-            // advance to next if any (consider conflicts + to_update)
-            const conflictsCount = (conflictState.conflicts || []).length;
-            const toUpdateCount = (conflictState.to_update || []).length;
-            const combinedTotal = conflictsCount + toUpdateCount;
+        
+        // Update decision
+        conflictState.decisions[idx].action = action;
+        
+        // Move resolved conflict from conflicts array to resolvedConflicts
+        if (isConflictItem) {
+            const resolvedItem = conflictState.conflicts.splice(idx, 1)[0];
+            conflictState.resolvedConflicts.push(resolvedItem);
+            
+            // Recalculate index after removal
+            // If we have remaining conflicts, stay at same index (which is now next item)
+            // Otherwise, move to first resolved item
+            if (conflictState.conflicts.length === 0 && conflictState.resolvedConflicts.length > 0) {
+                conflictState.currentIndex = 0; // Will point to first resolved item in renderCurrentConflict
+            } else if (idx >= conflictState.conflicts.length && conflictState.conflicts.length > 0) {
+                conflictState.currentIndex = conflictState.conflicts.length - 1;
+            }
+        } else {
             if (idx < combinedTotal - 1) {
                 conflictState.currentIndex++;
             }
-            renderConflictList();
-            renderCurrentConflict();
+        }
+        
+        renderConflictList();
+        renderCurrentConflict();
     }
 
     function prevConflict() {
@@ -601,8 +650,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function nextConflict() {
         const conflictsCount = (conflictState.conflicts || []).length;
+        const resolvedConflictsCount = (conflictState.resolvedConflicts || []).length;
         const toUpdateCount = (conflictState.to_update || []).length;
-        const total = conflictsCount + toUpdateCount;
+        const total = conflictsCount + resolvedConflictsCount + toUpdateCount;
         if (conflictState.currentIndex < total - 1) {
             conflictState.currentIndex++;
             renderConflictList();
