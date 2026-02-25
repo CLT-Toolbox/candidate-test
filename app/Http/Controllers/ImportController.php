@@ -137,7 +137,7 @@ class ImportController extends Controller
                 if (empty(array_filter($row))) {
                     continue;
                 }
-                
+
                 $rowData = array_combine($headers, $row);
 
                 // Handle both 'name' and 'layup_name' headers
@@ -184,7 +184,7 @@ class ImportController extends Controller
         try {
             $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($filePath);
             $worksheet = $spreadsheet->getActiveSheet();
-            
+
             $data = [];
             $currentLayup = null;
             $firstRow = true;

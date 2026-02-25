@@ -106,7 +106,7 @@
                     <p class="mt-1 text-xs leading-relaxed text-red-700 dark:text-red-300">
                         <span x-text="conflicts.length"></span>
                         {{ __('Layups differ significantly from current suppliers in the database.') }}
-                        <button type="button" @click="openConflictResolution" = !showConflictDetails"
+                        <button type="button" @click="openConflictResolution"=!showConflictDetails"
                             class="font-medium text-red-600 underline hover:no-underline dark:text-red-400">
                             {{ __('View details') }}
                         </button>

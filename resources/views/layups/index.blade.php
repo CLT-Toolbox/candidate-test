@@ -65,8 +65,7 @@
                         </h1>
                     </div>
                     <div class="flex gap-2">
-                        <button
-                            @click="importError = null; $dispatch('open-modal', 'import-layup')"
+                        <button @click="importError = null; $dispatch('open-modal', 'import-layup')"
                             class="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
                             {{ __('Import') }}
                         </button>
@@ -114,8 +113,7 @@
                         </thead>
                         <tbody>
                             @forelse ($layups as $layup)
-                                <tr
-                                    class="border-b border-gray-100 transition-colors duration-150 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700/50 cursor-pointer"
+                                <tr class="cursor-pointer border-b border-gray-100 transition-colors duration-150 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700/50"
                                     onclick="window.location='{{ route('layups.layers.index', $layup->id) }}'">
                                     <td class="px-6 py-4">
                                         <span class="font-mono text-sm font-medium text-gray-900 dark:text-gray-100">
