@@ -20,7 +20,7 @@ class SupplierController extends Controller
 
     public function index(Request $request)
     {
-        $suppliers = $this->supplierRepository->getPaginate(3, $request->input('search'));
+        $suppliers = $this->supplierRepository->getPaginate(10, $request->input('search'));
 
         return view('supplier.index', [
             'suppliers' => $suppliers,

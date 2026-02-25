@@ -26,7 +26,7 @@ class CltLayupController extends Controller
 
     public function index(Request $request, Supplier $supplier)
     {
-        $layups = $this->cltLayupRepository->getPaginate(3, $request->input('search'), $supplier);
+        $layups = $this->cltLayupRepository->getPaginate(10, $request->input('search'), $supplier);
 
         return view('supplier.layups.index', [
             'supplier' => $supplier,

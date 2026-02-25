@@ -19,7 +19,7 @@ class CltLayerController extends Controller
 
     public function index(Supplier $supplier, CltLayup $layup)
     {
-        $layers = $this->cltLayerRepository->getPaginate(3, $layup);
+        $layers = $this->cltLayerRepository->getPaginate(10, $layup);
 
         return view('supplier.layups.layers.index', [
             'supplier' => $supplier,
