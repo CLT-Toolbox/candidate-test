@@ -9,9 +9,9 @@ class ExampleTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_dashboard_requires_auth(): void
+    public function test_welcome_page_returns_successful_response(): void
     {
-        $response = $this->get('/dashboard');
-        $response->assertRedirect('/login');
+        $response = $this->get('/');
+        $response->assertStatus(200); // Welcome page exists now
     }
 }

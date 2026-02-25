@@ -8,6 +8,12 @@ use Illuminate\Http\Request;
 
 class LayerController extends Controller
 {
+    public function show(CltLayer $layer)
+    {
+        $layer->load('layup.supplier');
+        return view('layers.show', compact('layer'));
+    }
+
     public function create(CltLayup $layup)
     {
         return view('layers.create', compact('layup'));
@@ -17,13 +23,16 @@ class LayerController extends Controller
     {
         $validated = $request->validate([
             'layer_order' => 'required|integer',
-            'thickness' => 'required|numeric|min:0',
-            'width' => 'required|numeric|min:0',
-            'angle' => 'required|numeric|min:0|max:360'
+            'thickness'   => 'required|numeric|min:0',
+            'width'       => 'required|numeric|min:0',
+            'angle'       => 'required|numeric|min:0|max:360'
         ]);
 
         $layup->layers()->create($validated);
-        return redirect()->route('dashboard.layups.show', $layup)->with('success', 'Layer created!');
+
+        return redirect()
+            ->route('dashboard.layups.show', $layup)
+            ->with('success', 'Layer created!');
     }
 
     public function edit(CltLayer $layer)
@@ -35,19 +44,26 @@ class LayerController extends Controller
     {
         $validated = $request->validate([
             'layer_order' => 'required|integer',
-            'thickness' => 'required|numeric|min:0',
-            'width' => 'required|numeric|min:0',
-            'angle' => 'required|numeric|min:0|max:360'
+            'thickness'   => 'required|numeric|min:0',
+            'width'       => 'required|numeric|min:0',
+            'angle'       => 'required|numeric|min:0|max:360'
         ]);
 
         $layer->update($validated);
-        return redirect()->route('dashboard.layups.show', $layer->layup)->with('success', 'Layer updated!');
+
+        return redirect()
+            ->route('dashboard.layups.show', $layer->layup)
+            ->with('success', 'Layer updated!');
     }
 
     public function destroy(CltLayer $layer)
     {
         $layup = $layer->layup;
+
         $layer->delete();
-        return redirect()->route('dashboard.layups.show', $layup)->with('success', 'Layer deleted!');
+
+        return redirect()
+            ->route('dashboard.layups.show', $layup)
+            ->with('success', 'Layer deleted!');
     }
 }

@@ -8,7 +8,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CltLayup extends Model
 {
-    protected $fillable = ['supplier_id', 'name'];
+    protected $fillable = [
+        'supplier_id',
+        'name'
+    ];
 
     public function supplier(): BelongsTo
     {
@@ -17,6 +20,7 @@ class CltLayup extends Model
 
     public function layers(): HasMany
     {
-        return $this->hasMany(CltLayer::class)->orderBy('layer_order');
+        return $this->hasMany(CltLayer::class, 'layup_id')
+                    ->orderBy('layer_order');
     }
 }

@@ -15,6 +15,6 @@
         <button type="submit">Save</button>
     </form>
     
-    <a href="{{ route('dashboard.layups.show', $layup) }}">Back</a>
+    <a href="{{ route('dashboard.layups.show', $layup) }}">
 </body>
 </html>
