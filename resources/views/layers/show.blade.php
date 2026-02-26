@@ -15,6 +15,7 @@
 
 <div class="py-12">
     <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
+        
         <!-- Layer Info Card -->
         <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-lg mb-6">
             <div class="p-6">
