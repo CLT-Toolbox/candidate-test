@@ -106,7 +106,7 @@
                     <p class="mt-1 text-xs leading-relaxed text-red-700 dark:text-red-300">
                         <span x-text="conflicts.length"></span>
                         {{ __('Layups differ significantly from current suppliers in the database.') }}
-                        <button type="button" @click="openConflictResolution"=!showConflictDetails"
+                        <button type="button" @click="showConflictModal = true"
                             class="font-medium text-red-600 underline hover:no-underline dark:text-red-400">
                             {{ __('View details') }}
                         </button>
@@ -131,10 +131,7 @@
         </button>
 
         {{-- View Details button (show only if conflicts detected) --}}
-        <button x-show="detectedConflicts && conflicts.length > 0" type="button" @click="openConflictResolution"
-            class="rounded-lg border border-gray-300 px-4 py-2 font-medium text-gray-700 transition hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800">
-            {{ __('View Details') }}
-        </button>
+        
 
         {{-- Confirm Import button --}}
         <button x-show="selectedFile" type="button" @click="processImport" :disabled="isProcessing"

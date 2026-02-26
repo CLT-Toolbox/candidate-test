@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LayupsController;
 use App\Http\Controllers\LayersController;
 use App\Http\Controllers\ImportController;
+use App\Http\Controllers\ExportController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -31,7 +32,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/suppliers/{supplier}/layups/{layup}', [LayupsController::class, 'destroy'])->name('suppliers.layups.destroy');
 });
 Route::middleware('auth')->group(function () {
-    Route::get('/suppliers/layups/{layup}/layers', [LayersController::class, 'index'])->name('layups.layers.index');
+    Route::get('/suppliers/layups/layers/{layup}', [LayersController::class, 'index'])->name('layups.layers.index');
     Route::post('/suppliers/layups/{layup}/layers', [LayersController::class, 'store'])->name('layups.layers.store');
     Route::put('/suppliers/layups/{layup}/layers/{layer}', [LayersController::class, 'update'])->name('layups.layers.update');
     Route::delete('/suppliers/layups/{layup}/layers/{layer}', [LayersController::class, 'destroy'])->name('layups.layers.destroy');
@@ -39,5 +40,10 @@ Route::middleware('auth')->group(function () {
 Route::prefix('suppliers/{supplier}/import')->name('suppliers.import.')->group(function () {
     Route::post('/process', [ImportController::class, 'process'])->name('process');
     Route::post('/confirm', [ImportController::class, 'confirm'])->name('confirm');
+});
+Route::prefix('suppliers/{supplier}/export')->name('suppliers.export.')->group(function () {
+    Route::get('/json', [ExportController::class, 'exportJson'])->name('json');
+    Route::get('/csv', [ExportController::class, 'exportCsv'])->name('csv');
+    Route::get('/excel', [ExportController::class, 'exportExcel'])->name('excel');
 });
 require __DIR__.'/auth.php';

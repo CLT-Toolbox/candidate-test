@@ -88,7 +88,7 @@
                         </h1>
                     </div>
                     <div class="flex gap-2">
-                        
+
                         <button x-data @click="window.dispatchEvent(new CustomEvent('open-create-modal'))"
                             class="flex items-center gap-2 rounded-lg bg-[#3f7a5c] px-4 py-2 font-medium text-white transition hover:bg-[#2d5b45]">
                             <span>+</span> {{ __('Add Layer') }}
@@ -97,9 +97,11 @@
                 </div>
             </div>
 
-            {{-- Layers Table --}}
-            <div
-                class="overflow-hidden border border-[#D1D5DB] bg-white shadow-sm sm:rounded-lg dark:border-gray-700 dark:bg-gray-800">
+            {{-- Main Content: Table + Visualizer --}}
+            <div class="grid grid-cols-2 gap-4">
+                {{-- Layers Table --}}
+                <div
+                    class="overflow-hidden border border-[#D1D5DB] bg-white shadow-sm sm:rounded-lg dark:border-gray-700 dark:bg-gray-800">
                 <div class="overflow-x-auto">
                     <table class="w-full">
                         <thead class="bg-[#F9FAFB] dark:bg-gray-700">
@@ -195,55 +197,85 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
 
-                {{-- Pagination --}}
-                <div
-                    class="flex items-center justify-between border-t border-gray-200 bg-white px-6 py-3 dark:border-gray-700 dark:bg-gray-800">
-                    <p class="text-sm text-gray-700 dark:text-gray-400">
-                        {{ __('Showing') }} {{ $layers->firstItem() ?? 0 }} {{ __('to') }}
-                        {{ $layers->lastItem() ?? 0 }} {{ __('of') }} {{ $layers->total() }}
-                        {{ __('results') }}
-                    </p>
-                    <div class="flex gap-2">
-                        @if ($layers->onFirstPage())
-                            <button disabled
-                                class="cursor-not-allowed rounded-md border border-gray-300 bg-white px-2 py-1 text-gray-400 dark:border-gray-600 dark:bg-gray-700">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" class="h-4 w-4"
-                                    fill="currentColor">
-                                    <path
-                                        d="M3.8486400000000005 7.209265000000001c-0.437355 0.437355 -0.437355 1.147615 0 1.5849700000000002l6.71775 6.71775c0.437355 0.437355 1.147615 0.437355 1.5849700000000002 0s0.437355 -1.147615 0 -1.5849700000000002L6.2243450000000005 8 12.147860000000001 2.072985c0.437355 -0.437355 0.437355 -1.147615 0 -1.5849700000000002s-1.147615 -0.437355 -1.5849700000000002 0l-6.71775 6.71775Z" />
-                                </svg>
-                            </button>
-                        @else
-                            <a href="{{ $layers->previousPageUrl() }}"
-                                class="rounded-md border border-gray-300 bg-white px-2 py-1 text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" class="h-4 w-4"
-                                    fill="currentColor">
-                                    <path
-                                        d="M3.8486400000000005 7.209265000000001c-0.437355 0.437355 -0.437355 1.147615 0 1.5849700000000002l6.71775 6.71775c0.437355 0.437355 1.147615 0.437355 1.5849700000000002 0s0.437355 -1.147615 0 -1.5849700000000002L6.2243450000000005 8 12.147860000000001 2.072985c0.437355 -0.437355 0.437355 -1.147615 0 -1.5849700000000002s-1.147615 -0.437355 -1.5849700000000002 0l-6.71775 6.71775Z" />
-                                </svg>
-                            </a>
-                        @endif
+                {{-- Structure Visualizer --}}
+                <div class="overflow-hidden border border-[#D1D5DB] bg-white shadow-sm sm:rounded-lg dark:border-gray-700 dark:bg-gray-800 flex flex-col">
+                    <div class="flex-1 overflow-y-auto p-6">
+                        <div class="flex flex-col items-center">
+                            <!-- Header -->
+                            <h2 class="mb-6 text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                {{ __('Structure Visualizer') }}
+                            </h2>
 
-                        @if ($layers->hasMorePages())
-                            <a href="{{ $layers->nextPageUrl() }}"
-                                class="rounded-md border border-gray-300 bg-white px-2 py-1 text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" class="h-4 w-4"
-                                    fill="currentColor">
-                                    <path
-                                        d="M12.15136 7.209265000000001c0.437355 0.437355 0.437355 1.147615 0 1.5849700000000002l-6.71775 6.71775c-0.437355 0.437355 -1.147615 0.437355 -1.5849700000000002 0s-0.437355 -1.147615 0 -1.5849700000000002L9.775655 8 3.8521400000000003 2.072985c-0.437355 -0.437355 -0.437355 -1.147615 0 -1.5849700000000002s1.147615 -0.437355 1.5849700000000002 0l6.71775 6.71775Z" />
-                                </svg>
-                            </a>
-                        @else
-                            <button disabled
-                                class="cursor-not-allowed rounded-md border border-gray-300 bg-white px-2 py-1 text-gray-400 dark:border-gray-600 dark:bg-gray-700">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" class="h-4 w-4"
-                                    fill="currentColor">
-                                    <path
-                                        d="M12.15136 7.209265000000001c0.437355 0.437355 0.437355 1.147615 0 1.5849700000000002l-6.71775 6.71775c-0.437355 0.437355 -1.147615 0.437355 -1.5849700000000002 0s-0.437355 -1.147615 0 -1.5849700000000002L9.775655 8 3.8521400000000003 2.072985c-0.437355 -0.437355 -0.437355 -1.147615 0 -1.5849700000000002s1.147615 -0.437355 1.5849700000000002 0l6.71775 6.71775Z" />
-                                </svg>
-                            </button>
-                        @endif
+                            <div class="mb-6 flex items-center gap-4 text-xs text-gray-600 dark:text-gray-400">
+                                <span class="flex items-center gap-1.5">
+                                    <span class="h-3 w-3 rounded-sm bg-[#d4a574]"></span>
+                                    <span>{{ __('Longitudinal (0°)') }}</span>
+                                </span>
+                                <span class="flex items-center gap-1.5">
+                                    <span class="h-3 w-3 rounded-sm bg-[#b8935f]"></span>
+                                    <span>{{ __('Transverse (90°)') }}</span>
+                                </span>
+                            </div>
+
+                            <!-- 3D Stack Container -->
+                            <div class="relative flex items-center w-full" style="min-height: 350px;">
+                                <!-- Side Labels -->
+                                <div class="mr-4 flex flex-col justify-between self-stretch text-center" style="min-height: 300px;">
+                                    <div class="text-[9px] font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+                                        Top<br>(Out)
+                                    </div>
+                                    <div class="text-[9px] font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+                                        Bottom<br>(In)
+                                    </div>
+                                </div>
+
+                                <!-- Layers Stack -->
+                                <div class="flex flex-1 flex-col items-center gap-1.5 justify-center">
+                                    @forelse ($layers as $layer)
+                                        <div 
+                                            class="relative flex items-center justify-center rounded-lg shadow-sm transition-all duration-300"
+                                            style="
+                                                width: {{ $layer->angle == 0 ? '85%' : '70%' }};
+                                                height: {{ max(28, $layer->thickness * 0.9) }}px;
+                                                background-color: {{ $layer->angle == 0 ? '#d4a574' : '#b8935f' }};
+                                                transform: perspective(600px) rotateX(2deg);
+                                            "
+                                        >
+                                            <span class="text-[10px] font-semibold text-gray-700 dark:text-gray-900" title="Layer {{ $layer->layer_order }}: {{ $layer->thickness }}mm @ {{ $layer->angle }}°">
+                                                L{{ $layer->layer_order }} ({{ $layer->thickness }}mm)
+                                            </span>
+                                            <span class="absolute right-2 text-gray-700 dark:text-gray-900">
+                                                @if ($layer->angle == 0)
+                                                    <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                                                    </svg>
+                                                @else
+                                                    <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.333 4zM4.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0011 16V8a1 1 0 00-1.6-.8l-5.334 4z"></path>
+                                                    </svg>
+                                                @endif
+                                            </span>
+                                        </div>
+                                    @empty
+                                        <div class="text-center text-sm text-gray-500 dark:text-gray-400 py-12">
+                                            {{ __('No layers to visualize') }}
+                                        </div>
+                                    @endforelse
+                                </div>
+                            </div>
+
+                            <!-- Footer -->
+                            <div class="mt-6 w-full space-y-1 border-t border-gray-200 dark:border-gray-700 pt-4">
+                                <p class="text-center text-xs font-medium text-gray-900 dark:text-gray-100">
+                                    {{ __('Cross-Laminated Assembly') }}
+                                </p>
+                                <p class="text-center text-[10px] text-gray-600 dark:text-gray-400">
+                                    {{ __('Total: ') }} {{ $layup->ply_count ?? 0 }} {{ __('layers') }}, {{ number_format($layup->total_thickness, 0) }}mm
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -290,7 +322,7 @@
                                 width: data.width,
                                 angle: data.angle
                             };
-                            this.formAction = `/layups/{{ $layup->id }}/layers/${data.id}`;
+                            this.formAction = `/suppliers/layups/{{ $layup->id }}/layers/${data.id}`;
                             this.$dispatch('open-modal', 'layer-form');
                         },
 

@@ -1,4 +1,10 @@
+<div class="flex shrink-0 items-center">
+                    <a href="{{ route('dashboard') }}"
+                        class="flex h-10 w-10 items-center justify-center rounded-[8px] bg-[#3f7a5c] shadow-lg">
+
 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 30 30" id="Forest--Streamline-Sharp-Material" height="30" width="30">
 
   <path fill="white" d="M9.46875 27.5v-4.65625H0l5.90625 -8.5625H2.9375L11.25 2.5l3.75 5.3125L18.75 2.5l8.3125 11.78125h-2.9375l5.875 8.5625H20.5625V27.5h-3.59375v-4.65625H13.0625V27.5h-3.59375ZM21.25 20.96875h5.15625l-5.90625 -8.5625h2.78125L18.75 5.96875l-2.5 3.59375 3.3125 4.71875h-2.9375l4.625 6.6875Zm-17.625 0h15.28125l-5.90625 -8.5625h2.78125L11.25 5.96875l-4.53125 6.4375h2.8125L3.625 20.96875Zm0 0h5.90625H3.625Zm17.625 0h-4.625H16.25h7.03125H21.25Z" stroke-width="0.625"></path>
 </svg>
+                    </a>
+                </div>

@@ -4,12 +4,7 @@
         <div class="flex h-16 justify-between">
             <div class="flex">
                 <!-- Logo -->
-                <div class="flex shrink-0 items-center">
-                    <a href="{{ route('dashboard') }}"
-                        class="flex h-10 w-10 items-center justify-center rounded-[8px] bg-[#3f7a5c] shadow-lg">
-                        <x-application-logo class="h-10 w-10 text-white" />
-                    </a>
-                </div>
+                <x-application-logo class="h-10 w-10 text-white" />
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">

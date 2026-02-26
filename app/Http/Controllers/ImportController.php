@@ -33,7 +33,10 @@ class ImportController extends Controller
 
         // Parse the file
         try {
-            $importData = $this->parseFile($file);
+            $parseResult = $this->parseFile($file);
+            $importData = $parseResult['data'];
+            $exportedSupplierName = $parseResult['supplier_name'] ?? null;
+            $exportedSupplierId = $parseResult['supplier_id'] ?? null;
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -45,6 +48,22 @@ class ImportController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to parse file. Please check the file format.',
+            ], 400);
+        }
+
+        // Validate supplier match if file contains supplier info
+        if ($exportedSupplierId && $exportedSupplierId != $supplier->id) {
+            return response()->json([
+                'success' => false,
+                'message' => "This file was exported from supplier ID {$exportedSupplierId} ({$exportedSupplierName}). It can only be imported back to the same supplier.",
+            ], 400);
+        }
+
+        // If supplier name exists but ID doesn't, check by name
+        if (!$exportedSupplierId && $exportedSupplierName && $exportedSupplierName !== $supplier->name) {
+            return response()->json([
+                'success' => false,
+                'message' => "This file was exported from supplier ID {$exportedSupplierId} ({$exportedSupplierName}). It can only be imported back to the same supplier.",
             ], 400);
         }
 
@@ -87,15 +106,22 @@ class ImportController extends Controller
             ], 422);
         }
 
-        $resolutions = $request->resolutions;
-        $importData = $request->import_data;
+        try {
+            $resolutions = $request->resolutions;
+            $importData = $request->import_data;
 
-        $result = $this->executeImportWithResolutions($supplier, $importData, $resolutions);
+            $result = $this->executeImportWithResolutions($supplier, $importData, $resolutions);
 
-        return response()->json([
-            'success' => true,
-            'result' => $result,
-        ]);
+            return response()->json([
+                'success' => true,
+                'result' => $result,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Import confirmation failed: ' . $e->getMessage(),
+            ], 400);
+        }
     }
 
     /**
@@ -111,11 +137,26 @@ class ImportController extends Controller
             if (json_last_error() !== JSON_ERROR_NONE) {
                 throw new \Exception('Invalid JSON format: ' . json_last_error_msg());
             }
-            return $data;
+
+            // Check if it's our export format (with supplier_name and layups array)
+            if (isset($data['layups']) && is_array($data['layups'])) {
+                return [
+                    'data' => $data['layups'],
+                    'supplier_id' => $data['supplier_id'] ?? null,
+                    'supplier_name' => $data['supplier_name'] ?? null,
+                ];
+            }
+
+            // Otherwise assume it's an array of layups directly (no supplier info)
+            return [
+                'data' => $data,
+                'supplier_id' => null,
+                'supplier_name' => null,
+            ];
         } elseif ($extension === 'csv') {
             return $this->parseCsv($file->getRealPath());
         } elseif (in_array($extension, ['xlsx', 'xls'])) {
-            throw new \Exception('Excel import not yet supported. Please use JSON or CSV format.');
+            return $this->parseExcel($file->getRealPath());
         }
 
         throw new \Exception('Unsupported file format: ' . $extension);
@@ -128,9 +169,31 @@ class ImportController extends Controller
     {
         $data = [];
         $currentLayup = null;
+        $supplierName = null;
+        $supplierId = null;
 
         if (($handle = fopen($filePath, 'r')) !== false) {
+            // First row is headers
             $headers = fgetcsv($handle);
+
+            if (!$headers) {
+                fclose($handle);
+                return [
+                    'data' => [],
+                    'supplier_id' => null,
+                    'supplier_name' => null,
+                ];
+            }
+
+            // Clean up headers (trim whitespace)
+            $headers = array_map('trim', $headers);
+            // Filter out empty header values
+            $headerIndices = [];
+            foreach ($headers as $idx => $header) {
+                if (!empty($header)) {
+                    $headerIndices[$idx] = $header;
+                }
+            }
 
             while (($row = fgetcsv($handle)) !== false) {
                 // Skip empty rows
@@ -138,10 +201,22 @@ class ImportController extends Controller
                     continue;
                 }
 
-                $rowData = array_combine($headers, $row);
+                // Extract only columns that have headers
+                $rowData = [];
+                foreach ($headerIndices as $idx => $header) {
+                    $rowData[$header] = $row[$idx] ?? null;
+                }
+
+                // Extract supplier info (from first data row)
+                if (!$supplierId && isset($rowData['supplier_id']) && !empty($rowData['supplier_id'])) {
+                    $supplierId = $rowData['supplier_id'];
+                }
+                if (!$supplierName && isset($rowData['supplier_name']) && !empty($rowData['supplier_name'])) {
+                    $supplierName = $rowData['supplier_name'];
+                }
 
                 // Handle both 'name' and 'layup_name' headers
-                $layupName = $rowData['name'] ?? $rowData['layup_name'] ?? null;
+                $layupName = $rowData['layup_name'] ?? $rowData['name'] ?? null;
                 $layerOrder = $rowData['layer_order'] ?? null;
 
                 // If layup_name exists and is different from current, start new layup
@@ -173,7 +248,11 @@ class ImportController extends Controller
             fclose($handle);
         }
 
-        return $data;
+        return [
+            'data' => $data,
+            'supplier_id' => $supplierId ? (int) $supplierId : null,
+            'supplier_name' => $supplierName,
+        ];
     }
 
     /**
@@ -183,40 +262,91 @@ class ImportController extends Controller
     {
         try {
             $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($filePath);
-            $worksheet = $spreadsheet->getActiveSheet();
+
+            // Check if there's a metadata sheet
+            $supplierName = null;
+            $supplierId = null;
+
+            if ($spreadsheet->getSheetCount() > 1) {
+                try {
+                    $metaSheet = $spreadsheet->getSheetByName('Export Info');
+                    if ($metaSheet) {
+                        $supplierId = $metaSheet->getCell('B1')->getValue();
+                        $supplierName = $metaSheet->getCell('B2')->getValue();
+                    }
+                } catch (\Exception $e) {
+                    // No metadata sheet, continue without it
+                }
+            }
+
+            // Get data from first sheet
+            $worksheet = $spreadsheet->getSheet(0);
 
             $data = [];
             $currentLayup = null;
             $firstRow = true;
-            $headers = [];
+            $headerMap = [];
 
             $highestRow = $worksheet->getHighestRow();
-            $highestColumn = $worksheet->getHighestColumn();
 
             for ($row = 1; $row <= $highestRow; $row++) {
-                $rowData = [];
-                for ($col = 'A'; $col <= $highestColumn; $col++) {
-                    $cell = $worksheet->getCell($col . $row);
-                    $rowData[] = $cell->getValue();
-                }
-
-                // Skip empty rows
-                if (empty(array_filter($rowData))) {
-                    continue;
-                }
-
                 // First row is headers
                 if ($firstRow) {
-                    $headers = $rowData;
+                    // Build header mapping
+                    $colIndex = 0;
+                    foreach ($worksheet->getRowIterator($row, $row)->current()->getCellIterator() as $cell) {
+                        $headerValue = strtolower(trim($cell->getValue()));
+
+                        // Map headers to our keys
+                        if (strpos($headerValue, 'supplier') !== false) {
+                            $headerMap[$colIndex] = 'supplier_name';
+                        } elseif (strpos($headerValue, 'layup') !== false) {
+                            $headerMap[$colIndex] = 'layup_name';
+                        } elseif (strpos($headerValue, 'order') !== false) {
+                            $headerMap[$colIndex] = 'layer_order';
+                        } elseif (strpos($headerValue, 'thickness') !== false) {
+                            $headerMap[$colIndex] = 'thickness';
+                        } elseif (strpos($headerValue, 'width') !== false) {
+                            $headerMap[$colIndex] = 'width';
+                        } elseif (strpos($headerValue, 'angle') !== false) {
+                            $headerMap[$colIndex] = 'angle';
+                        }
+                        $colIndex++;
+                    }
                     $firstRow = false;
                     continue;
                 }
 
-                // Combine with headers
-                $rowData = array_combine($headers, $rowData);
+                // Read data row
+                $rowData = [];
+                $colIndex = 0;
+                $isEmpty = true;
 
-                // Handle both 'name' and 'layup_name' headers
-                $layupName = $rowData['name'] ?? $rowData['layup_name'] ?? null;
+                foreach ($worksheet->getRowIterator($row, $row)->current()->getCellIterator() as $cell) {
+                    $value = $cell->getValue();
+                    if (!empty($value)) {
+                        $isEmpty = false;
+                    }
+
+                    if (isset($headerMap[$colIndex])) {
+                        $key = $headerMap[$colIndex];
+                        $rowData[$key] = $value;
+                    }
+                    $colIndex++;
+                }
+
+                // Skip empty rows
+                if ($isEmpty) {
+                    continue;
+                }
+
+                // Extract supplier name from data if not from metadata
+                if (!$supplierName && isset($rowData['supplier_name']) && !empty($rowData['supplier_name'])) {
+                    $supplierName = $rowData['supplier_name'];
+                }
+
+                // Get layup name and layer order
+                $layupName = $rowData['layup_name'] ?? null;
                 $layerOrder = $rowData['layer_order'] ?? null;
 
                 // If layup_name exists and is different from current, start new layup
@@ -245,7 +375,11 @@ class ImportController extends Controller
                 $data[] = $currentLayup;
             }
 
-            return $data;
+            return [
+                'data' => $data,
+                'supplier_id' => $supplierId ? (int) $supplierId : null,
+                'supplier_name' => $supplierName,
+            ];
         } catch (\Exception $e) {
             throw new \Exception('Failed to parse Excel file: ' . $e->getMessage());
         }
@@ -276,13 +410,20 @@ class ImportController extends Controller
                         'existing' => [
                             'layers' => $existingLayup->layers->map(fn($l) => [
                                 'order' => $l->layer_order,
-                                'thickness' => $l->thickness,
-                                'width' => $l->width,
-                                'angle' => $l->angle,
+                                'thickness' => (float) $l->thickness,
+                                'width' => (float) $l->width,
+                                'angle' => (float) $l->angle,
                             ])->toArray(),
                         ],
                         'importing' => [
-                            'layers' => $importLayup['layers'],
+                            'layers' => array_map(function($layer) {
+                                return [
+                                    'order' => $layer['layer_order'],
+                                    'thickness' => (float) $layer['thickness'],
+                                    'width' => (float) $layer['width'],
+                                    'angle' => (float) $layer['angle'],
+                                ];
+                            }, $importLayup['layers']),
                         ],
                         'layerConflicts' => $layerConflicts,
                         'resolved' => false,
@@ -310,13 +451,13 @@ class ImportController extends Controller
                 $existing = $existingLayers[$order];
                 $diffFields = [];
 
-                if ((float) $existing->thickness != (float) $importLayer['thickness']) {
+                if (abs((float) $existing->thickness - (float) $importLayer['thickness']) > 0.01) {
                     $diffFields[] = 'thickness';
                 }
-                if ((float) $existing->width != (float) $importLayer['width']) {
+                if (abs((float) $existing->width - (float) $importLayer['width']) > 0.01) {
                     $diffFields[] = 'width';
                 }
-                if ((float) $existing->angle != (float) $importLayer['angle']) {
+                if (abs((float) $existing->angle - (float) $importLayer['angle']) > 0.01) {
                     $diffFields[] = 'angle';
                 }
 
@@ -438,7 +579,7 @@ class ImportController extends Controller
                         foreach ($importLayup['layers'] as $layer) {
                             CltLayer::create([
                                 'layup_id' => $existingLayup->id,
-                                'layer_order' => $layer['layer_order'],
+                                'layer_order' => $layer['layer_order'] ?? $layer['order'] ?? 0,
                                 'thickness' => $layer['thickness'],
                                 'width' => $layer['width'],
                                 'angle' => $layer['angle'],
@@ -457,7 +598,7 @@ class ImportController extends Controller
                     foreach ($importLayup['layers'] as $layer) {
                         CltLayer::create([
                             'layup_id' => $layup->id,
-                            'layer_order' => $layer['layer_order'],
+                            'layer_order' => $layer['layer_order'] ?? $layer['order'] ?? 0,
                             'thickness' => $layer['thickness'],
                             'width' => $layer['width'],
                             'angle' => $layer['angle'],

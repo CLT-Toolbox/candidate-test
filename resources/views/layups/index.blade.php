@@ -69,10 +69,50 @@
                             class="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
                             {{ __('Import') }}
                         </button>
-                        <button
-                            class="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
-                            {{ __('Export') }}
-                        </button>
+                        {{-- Export Dropdown --}}
+                        <div x-data="{ exportOpen: false }" @click.away="exportOpen = false" class="relative">
+                            <button @click="exportOpen = !exportOpen"
+                                class="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
+                                {{ __('Export') }}
+                                <svg class="ml-1 inline-block h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+
+                            <div x-show="exportOpen"
+                                x-transition:enter="transition ease-out duration-100"
+                                x-transition:enter-start="transform opacity-0 scale-95"
+                                x-transition:enter-end="transform opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-75"
+                                x-transition:leave-start="transform opacity-100 scale-100"
+                                x-transition:leave-end="transform opacity-0 scale-95"
+                                class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800 dark:ring-gray-700"
+                                style="display: none;">
+                                <div class="py-1">
+                                    <a href="{{ route('suppliers.export.json', $supplier->id) }}"
+                                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+                                        <svg class="mr-2 inline-block h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                        </svg>
+                                        {{ __('Export as JSON') }}
+                                    </a>
+                                    <a href="{{ route('suppliers.export.csv', $supplier->id) }}"
+                                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+                                        <svg class="mr-2 inline-block h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                        {{ __('Export as CSV') }}
+                                    </a>
+                                    <a href="{{ route('suppliers.export.excel', $supplier->id) }}"
+                                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+                                        <svg class="mr-2 inline-block h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                        </svg>
+                                        {{ __('Export as Excel') }}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                         <button x-data @click="window.dispatchEvent(new CustomEvent('open-create-modal'))"
                             class="flex items-center gap-2 rounded-lg bg-[#3f7a5c] px-4 py-2 font-medium text-white transition hover:bg-[#2d5b45]">
                             <span>+</span> {{ __('Add Layup') }}
@@ -265,8 +305,10 @@
                         conflicts: [],
                         currentConflictIndex: 0,
                         collapseAll: false,
+                        sidebarOpen: true,
                         importError: null,
                         showConflictDetails: false,
+                        showConflictModal: false,
                         detectedConflicts: false,
                         isProcessing: false,
 
@@ -414,8 +456,8 @@
 
                                 if (result.has_conflicts && this.conflictStrategy === 'manual') {
                                     this.conflicts = result.conflicts;
-                                    this.$dispatch('close-modal', 'import-layup');
-                                    this.$dispatch('open-modal', 'conflict-resolution');
+                                    this.currentConflictIndex = 0;
+                                    this.showConflictModal = true;
                                 } else {
                                     // Import successful
                                     window.location.reload();
@@ -427,13 +469,8 @@
                             }
                         },
 
-                        openConflictResolution() {
-                            this.$dispatch('close-modal', 'import-layup');
-                            this.$dispatch('open-modal', 'conflict-resolution');
-                        },
-
                         closeConflictModal() {
-                            this.$dispatch('close-modal', 'conflict-resolution');
+                            this.showConflictModal = false;
                         },
 
                         hasFieldConflict(order, field) {
@@ -500,7 +537,7 @@
                             this.conflicts = [];
                             this.currentConflictIndex = 0;
                             this.selectedFile = null;
-                            this.$dispatch('close-modal', 'conflict-resolution');
+                            this.showConflictModal = false;
                         }
                     }
                 }
