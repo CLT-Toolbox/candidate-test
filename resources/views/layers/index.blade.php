@@ -345,7 +345,7 @@
                         openDeleteModal(data) {
                             this.deleteData.id = data.id;
                             this.deleteData.layer_order = data.layer_order;
-                            this.deleteAction = `/layups/{{ $layup->id }}/layers/${data.id}`;
+                            this.deleteAction = `/suppliers/layups/{{ $layup->id }}/layers/${data.id}`;
                             this.$dispatch('open-modal', 'delete-confirmation');
                         },
 
