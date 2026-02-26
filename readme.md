@@ -1,7 +1,7 @@
 # Feature Test Assignment
 # CLT Toolbox -- Candidate Technical Test Implementation
 
-[![Demo](https://img.youtube.com/vi/qS_PyGWfOQk/maxresdefault.jpg)](https://youtu.be/qS_PyGWfOQk)
+[![Demo](https://img.youtube.com/vi/kz4f-8Ic0MQ/maxresdefault.jpg)](https://youtu.be/kz4f-8Ic0MQ)
 
 ------------------------------------------------------------------------
 
