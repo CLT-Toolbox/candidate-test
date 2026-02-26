@@ -30,8 +30,7 @@ class CltLayerController extends Controller
 
     public function store(Supplier $supplier, CltLayup $layup, CltLayerRequest $request)
     {
-        $layer_order = $layup->cltLayers()->count() === 0 ? 1 : $layup->cltLayers()->max('layer_order') + 1;
-        $this->cltLayerRepository->create($layup, array_merge($request->validated(), ['layer_order' => $layer_order]));
+        $this->cltLayerRepository->create($layup, $request->validated());
 
         return redirect()->route('suppliers.layups.layers.index', [$supplier->id, $layup->id]);
     }

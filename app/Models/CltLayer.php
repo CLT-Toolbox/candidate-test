@@ -25,6 +25,16 @@ class CltLayer extends Model
         'angle' => 'decimal:2',
     ];
 
+    protected static function booted()
+    {
+        static::creating(function (CltLayer $cltLayer) {
+            if (is_null($cltLayer->layer_order)) {
+                $maxOrder = static::where('layup_id', $cltLayer->layup_id)->max('layer_order');
+                $cltLayer->layer_order = $maxOrder ? $maxOrder + 1 : 1;
+            }
+        });
+    }
+
     public function cltLayup(): BelongsTo
     {
         return $this->belongsTo(CltLayup::class, 'layup_id', 'id');
