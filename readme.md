@@ -6,7 +6,7 @@
 
 # Entity Relationship Diagram (ERD)
 
-![ERD](ERD.png)
+![ERD](erd-new.png)
 
 ------------------------------------------------------------------------
 
