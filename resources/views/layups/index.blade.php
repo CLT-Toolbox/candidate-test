@@ -72,7 +72,7 @@
                         {{-- Export Dropdown --}}
                         <div x-data="{ exportOpen: false }" @click.away="exportOpen = false" class="relative">
                             <button @click="exportOpen = !exportOpen"
-                                class="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
+                                class="rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
                                 {{ __('Export') }}
                                 <svg class="ml-1 inline-block h-4 w-4" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
