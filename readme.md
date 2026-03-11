@@ -1,155 +1,157 @@
 # Feature Test Assignment
+# CLT Toolbox -- Candidate Technical Test Implementation
+### Click to see Demo 👇
+[![Demo](https://img.youtube.com/vi/kz4f-8Ic0MQ/hqdefault.jpg)](https://youtu.be/kz4f-8Ic0MQ)
+------------------------------------------------------------------------
 
-## 1. Instructions
+# Entity Relationship Diagram (ERD)
 
-- Clone or fork this repository.
-- Create a new branch: `{user}-assignment`.
-- Invite **@ikhsan017** and **@dhiaaziz** as collaborators.
-- Follow the setup instructions provided in the repository before running the project.
+![ERD](erd-new.png)
 
-## 2. Feature Requirements
+------------------------------------------------------------------------
 
-### Core Features (Main Criteria)
+# Repository
 
-- [ ] CRUD Suppliers
-- [ ] CRUD CLT Layups (nested under Supplier)
-- [ ] CRUD CLT Layers (nested under Layup)
+Branch assignment:
 
-The structure should properly reflect the hierarchy:
-Supplier → Layups → Layers
+azmigilar-gif-assignment
 
-### Data Model (ERD)
+------------------------------------------------------------------------
 
-Below is the Entity Relationship Diagram (ERD) representing the data structure:
+# Clone Repository (Branch Assignment)
 
-![ERD](./erd-new.png)
+``` bash
+git clone -b azmigilar-gif-assignment --single-branch https://github.com/azmigilar-gif/candidate-test.git
+cd candidate-test
+```
 
-### Import / Export (Main Criteria)
+------------------------------------------------------------------------
 
-- [ ] **Export by Supplier**
-    - Must include: Supplier + all related Layups + all related Layers
+# Setup Project
 
-- [ ] **Import by Supplier**
-    - Must create and/or update Layups and Layers under the specified supplier
+## 1. Install Dependencies
 
-Format is flexible (JSON / CSV / Excel, etc.). JSON format is completely acceptable.
+``` bash
+composer install
+npm install
+```
 
-## 3. Feature: Conflict Resolution (Bonus – Important)
+------------------------------------------------------------------------
 
-During import, conflicts may occur when incoming data differs from existing records.
+## 2. Environment Setup
 
-### Conflict Detection Rules
+``` bash
+cp .env.example .env
+php artisan key:generate
+```
 
-#### 1. Layup-Level Conflict
+------------------------------------------------------------------------
 
-If a layup with the same `name` already exists under the same supplier:
+## 3. Configure Database
 
-- Treat it as the same layup candidate.
-- Do **not** automatically create a new layup.
+Edit `.env`:
 
-#### 2. Layer-Level Conflict
+DB_DATABASE=your_database\
+DB_USERNAME=your_username\
+DB_PASSWORD=your_password
 
-If:
+Run migration:
 
-- A layer with the same `layer_order` exists within that layup,
-- **AND** one or more fields differ (`thickness`, `width`, `angle`),
+``` bash
+php artisan migrate
+```
 
-→ This must be treated as a conflict.
+Optional seeder:
 
----
+``` bash
+php artisan db:seed
+```
 
-### Required Conflict Handling
+------------------------------------------------------------------------
 
-You must implement a clearly defined conflict resolution strategy.
+## 4. Run Application
 
-At minimum, support **one** of the following:
+Add script inside `package.json`:
 
-- **Overwrite Existing**  
-  (Incoming data replaces current data)
+``` json
+"scripts": {
+    "start": "concurrently \"php artisan serve\" \"npm run dev\""
+}
+```
 
-- **Skip Conflict**  
-  (Keep current data, ignore incoming change)
+Install concurrently if needed:
 
-- **Duplicate Layup**  
-  (Create a new layup with a suffix such as `name (imported)`)
+``` bash
+npm install concurrently --save-dev
+```
 
-- **Reject Entire Import**  
-  (Abort and return a detailed conflict report)
+Run application:
 
----
+``` bash
+npm run start
+```
 
-### Advanced Conflict Resolution (UI-Based – Bonus)
+Application will run at:
 
-For additional bonus points, implement a **manual conflict resolution interface** similar to GitHub merge conflict resolution.
+http://127.0.0.1:8000
 
-Expected behavior:
+------------------------------------------------------------------------
 
-- Display **Existing Version (Current Data)** and  
-  **Incoming Version (Imported Data)** side-by-side
-- Highlight field-level differences
-- Allow the user to choose:
-    - ✅ Keep Existing
-    - ✅ Accept Incoming
-- Support resolving conflicts one-by-one
-- Provide navigation (e.g., “1 of 3 discrepancies”)
+# Features Implemented
 
-This may be implemented as:
+## Supplier Management
 
-- A modal, or
-- A dedicated conflict resolution page.
+-   Create
+-   Read
+-   Update
+-   Delete
 
-## 4. Design Reference
+## Layup Management
 
-A design reference is available in Figma:
+-   Nested under Supplier
+-   CRUD
+-   Validation
+-   Unique layup handling
 
-[Figma Design File](https://www.figma.com/design/odWJ887r00aslmSFPIHMCx/SPEC-Toolbox---Feature-Test?node-id=11001-35&t=XUggOaUUi9p8jGFG-1)
+## Layer Management
 
-> The design is for reference only. Exact visual matching is not required.
+-   Ordered layers
+-   Validation for thickness, width, angle
+-   Conflict detection based on `layer_order`
 
-## 5. Evaluation Criteria
+------------------------------------------------------------------------
 
-### Main Evaluation
+# Export Feature
 
-- Correct implementation of the required features
+Supported formats: - JSON - CSV - XLSX
 
-### Bonus Evaluation
+------------------------------------------------------------------------
 
-**Architecture & Design Patterns**
+# Import Feature
 
-- Use Repository and/or Service pattern
-- Bind interfaces via a Service Provider
+Supported formats: - JSON - CSV - XLSX
 
-**Laravel Best Practices**
+Import behavior: - Layup matched by `name` - Layer matched by
+`layer_order` - Conflict detection before persistence
 
-- Form Request validation
-- Policies or Gates for authorization
-- Proper use of Route Model Binding
-- Clean, maintainable code following Laravel conventions
+## Conflict Resolution Strategies
 
-**Automated Testing**
+Skip\
+Existing data remains unchanged.
 
-- Unit tests (validation, services, repositories)
-- Feature tests (CRUD and import/export flows)
+Overwrite\
+Existing data replaced with imported data.
 
-**Additional Improvements**
+Manual\
+User compares existing vs incoming data before confirmation.
 
-- Any meaningful enhancements will be considered positively
+------------------------------------------------------------------------
 
-## 6. Submission
+# Architecture Approach
 
-The deadline will be provided via email.  
-Please ensure submission within the specified timeframe.
-
-
-## 7. Demo
-
-Include one of the following with your submission:
-
-- A demo video (recommended), or
-- A live project link
-
-Ensure the demo clearly showcases:
-
-- CRUD functionality
-- Import / Export feature
-- Conflict resolution behavior
+-   Supplier → Layup → Layer relational hierarchy
+-   Service layer for business logic
+-   Form Request validation
+-   Clean import/export separation
+-   Conflict resolution before DB transaction commit
+-   Nested resource routing

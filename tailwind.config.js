@@ -13,6 +13,7 @@ export default {
         extend: {
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                ascender: ['Ascender Serif W01 Bold', 'serif'],
             },
         },
     },
