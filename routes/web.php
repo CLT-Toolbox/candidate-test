@@ -1,6 +1,9 @@
 <?php
 
+use App\Http\Controllers\CltLayerController;
+use App\Http\Controllers\CltLayupController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SupplierController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -15,6 +18,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+Route::middleware('auth')->resource('suppliers', SupplierController::class)->except(['create', 'show', 'edit']);
+Route::middleware('auth')->get('/suppliers/export', [SupplierController::class, 'export'])->name('suppliers.export');
+
+Route::middleware('auth')->prefix('suppliers/{supplier}')->name('suppliers.')->group(function () {
+    Route::resource('layups', CltLayupController::class)->except(['create', 'show', 'edit']);
+    Route::get('/layups/export', [CltLayupController::class, 'export'])->name('layups.export');
+    Route::post('/layups/import', [CltLayupController::class, 'import'])->name('layups.import');
+    Route::post('/layups/import/resolve', [CltLayupController::class, 'resolve'])->name('layups.import.resolve');
+    Route::prefix('layups/{layup}')->name('layups.')->group(function () {
+        Route::resource('layers', CltLayerController::class)->except(['create', 'show', 'edit']);
+    });
 });
 
 require __DIR__.'/auth.php';

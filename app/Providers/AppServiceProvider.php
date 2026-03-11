@@ -2,6 +2,13 @@
 
 namespace App\Providers;
 
+use App\Interfaces\CltLayerRepositoryInterface;
+use App\Interfaces\CltLayupRepositoryInterface;
+use App\Interfaces\SupplierRepositoryInteface;
+use App\Repositories\CltLayerRepository;
+use App\Repositories\CltLayupRepository;
+use App\Repositories\SupplierRepository;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -11,7 +18,20 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(
+            SupplierRepositoryInteface::class,
+            SupplierRepository::class,
+            );
+
+        $this->app->bind(
+            CltLayupRepositoryInterface::class,
+            CltLayupRepository::class,
+        );
+
+        $this->app->bind(
+            CltLayerRepositoryInterface::class,
+            CltLayerRepository::class,
+        );
     }
 
     /**
@@ -19,6 +39,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Paginator::useTailwind();
     }
 }
