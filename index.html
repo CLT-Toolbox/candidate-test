@@ -1,58 +1,254 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Layup Drawer</title>
+    <title>Beam Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/beam-analysis.js"></script>
+    <style>
+        body { font-family: Arial; max-width: 1200px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
+        .container { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .chart-container { width: 100%; height: 400px; margin: 20px 0; }
+        .results { background: #e8f4f8; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background: #0066cc; color: white; }
+        .btn { background: #0066cc; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+        .btn:hover { background: #0052a3; }
+        .input-group { margin: 10px 0; }
+        .input-group label { display: inline-block; width: 150px; font-weight: bold; }
+        .input-group input, .input-group select { padding: 5px; width: 200px; }
+    </style>
 </head>
 <body>
-    <canvas width="500" height="800" id="playground"></canvas>
+    <h1>🔧 Beam Analysis Calculator</h1>
+    
+    <div class="container">
+        <h2>Input Parameters</h2>
+        
+        <div class="input-group">
+            <label>Tipe Balok:</label>
+            <select id="beamType" onchange="toggleInputs()">
+                <option value="simply-supported">Simply Supported</option>
+                <option value="two-span">Two Span Unequal</option>
+            </select>
+        </div>
 
-    <script src="js/layup-drawer.js"></script>
+        <div class="input-group">
+            <label>Beban w (kN/m):</label>
+            <input type="number" id="w" value="20" step="0.01">
+        </div>
+
+        <div id="simplyInputs">
+            <div class="input-group">
+                <label>Panjang L (m):</label>
+                <input type="number" id="L" value="8" step="0.1">
+            </div>
+            <div class="input-group">
+                <label>EI (N-mm²):</label>
+                <input type="number" id="EI" value="3150000000000" step="1000000">
+            </div>
+            <div class="input-group">
+                <label>Faktor j2:</label>
+                <input type="number" id="j2" value="2" step="0.1">
+            </div>
+        </div>
+
+        <div id="twoSpanInputs" style="display:none;">
+            <div class="input-group">
+                <label>Bentang L1 (m):</label>
+                <input type="number" id="L1" value="5" step="0.1">
+            </div>
+            <div class="input-group">
+                <label>Bentang L2 (m):</label>
+                <input type="number" id="L2" value="4" step="0.1">
+            </div>
+            <div class="input-group">
+                <label>EI (N-mm²):</label>
+                <input type="number" id="EI2" value="3150000000000" step="1000000">
+            </div>
+        </div>
+
+        <button class="btn" onclick="calculate()">🔍 Hitung & Tampilkan Grafik</button>
+    </div>
+
+    <div id="results" class="container" style="display:none;">
+        <h2>Hasil Perhitungan</h2>
+        <div id="reactions" class="results"></div>
+        
+        <h3>Grafik Bending Moment</h3>
+        <div class="chart-container"><canvas id="momentChart"></canvas></div>
+        
+        <h3>Grafik Shear Force</h3>
+        <div class="chart-container"><canvas id="shearChart"></canvas></div>
+        
+        <h3>Grafik Deflection</h3>
+        <div class="chart-container"><canvas id="deflectionChart"></canvas></div>
+
+        <h3>Data Points (10 titik pertama)</h3>
+        <div id="dataTable"></div>
+    </div>
+
     <script>
-        var cltLayup = {
-            t1 : {
-                label : 'T1',
-                thickness : 45, // in mm
-                angle : 0,      // in degree
-                grade : 'MGP10',
-            },
+        function toggleInputs() {
+            const type = document.getElementById('beamType').value;
+            document.getElementById('simplyInputs').style.display = type === 'simply-supported' ? 'block' : 'none';
+            document.getElementById('twoSpanInputs').style.display = type === 'two-span' ? 'block' : 'none';
+        }
 
-            t2 : {
-                label : 'T2',
-                thickness : 30, // in mm
-                angle : 90,     // in degree
-                grade : 'MGP6',
-            },
+        let momentChart, shearChart, deflectionChart;
 
-            t3 : {
-                label : 'T3',
-                thickness : 30, // in mm
-                angle : 0,      // in degree
-                grade : 'MGP5',
-            },
+        function calculate() {
+            const type = document.getElementById('beamType').value;
+            let config;
 
-            t4 : {
-                label : 'T4',
-                thickness : 30, // in mm
-                angle : 90,     // in degree
-                grade : 'MGP6',
-            },
+            if (type === 'simply-supported') {
+                config = {
+                    type: 'simply-supported',
+                    w: parseFloat(document.getElementById('w').value),
+                    L: parseFloat(document.getElementById('L').value),
+                    EI: parseFloat(document.getElementById('EI').value),
+                    j2: parseFloat(document.getElementById('j2').value)
+                };
+            } else {
+                config = {
+                    type: 'two-span',
+                    w: parseFloat(document.getElementById('w').value),
+                    L1: parseFloat(document.getElementById('L1').value),
+                    L2: parseFloat(document.getElementById('L2').value),
+                    EI: parseFloat(document.getElementById('EI2').value)
+                };
+            }
 
-            t5 : {
-                label : 'T5',
-                thickness : 45, // in mm
-                angle : 0,      // in degree
-                grade : 'MGP10',
-            },
+            const analyzer = new BeamAnalysis.analyzer(config);
+            const result = analyzer.calculate();
+            displayResults(result);
+            createCharts(result);
+        }
 
+        function displayResults(result) {
+            document.getElementById('results').style.display = 'block';
+            
+            let reactionsHTML = '<h3>Reaksi Tumpuan</h3><table>';
+            
+            if (result.type === 'simply-supported') {
+                reactionsHTML += `
+                    <tr><th>Parameter</th><th>Nilai</th></tr>
+                    <tr><td>Ra</td><td>${result.reactions.Ra.toFixed(4)} kN</td></tr>
+                    <tr><td>Rb</td><td>${result.reactions.Rb.toFixed(4)} kN</td></tr>
+                    <tr><td>Maks Moment</td><td>${result.maxMoment.toFixed(4)} kN-m</td></tr>
+                    <tr><td>Maks Shear</td><td>${result.maxShear.toFixed(4)} kN</td></tr>
+                    <tr><td>Maks Deflection</td><td>${result.maxDeflection.toFixed(4)} mm</td></tr>
+                `;
+            } else {
+                reactionsHTML += `
+                    <tr><th>Parameter</th><th>Nilai</th></tr>
+                    <tr><td>M1 (Moment di Support)</td><td>${result.reactions.M1.toFixed(4)} kN-m</td></tr>
+                    <tr><td>R1</td><td>${result.reactions.R1.toFixed(4)} kN</td></tr>
+                    <tr><td>R2</td><td>${result.reactions.R2.toFixed(4)} kN</td></tr>
+                    <tr><td>R3</td><td>${result.reactions.R3.toFixed(4)} kN</td></tr>
+                    <tr><td>Maks Moment</td><td>${result.maxMoment.toFixed(4)} kN-m</td></tr>
+                    <tr><td>Maks Shear</td><td>${result.maxShear.toFixed(4)} kN</td></tr>
+                `;
+            }
+            reactionsHTML += '</table>';
+            document.getElementById('reactions').innerHTML = reactionsHTML;
+
+            let tableHTML = '<table><tr><th>x (m)</th><th>Shear (kN)</th><th>Moment (kN-m)</th><th>Deflection (mm)</th></tr>';
+            result.data.slice(0, 10).forEach(d => {
+                tableHTML += `<tr><td>${d.x}</td><td>${d.shear.toFixed(2)}</td><td>${d.moment.toFixed(2)}</td><td>${d.deflection.toFixed(2)}</td></tr>`;
+            });
+            tableHTML += '</table>';
+            document.getElementById('dataTable').innerHTML = tableHTML;
+        }
+
+        function createCharts(result) {
+            const labels = result.data.map(d => d.x);
+            
+            if (momentChart) momentChart.destroy();
+            if (shearChart) shearChart.destroy();
+            if (deflectionChart) deflectionChart.destroy();
+
+            momentChart = new Chart(document.getElementById('momentChart'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Bending Moment (kN-m)',
+                        data: result.data.map(d => d.moment),
+                        borderColor: 'red',
+                        backgroundColor: 'rgba(255,0,0,0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { title: { display: true, text: 'Bending Moment Diagram' } },
+                    scales: {
+                        x: { title: { display: true, text: 'Span (m)' } },
+                        y: { title: { display: true, text: 'Moment (kN-m)' } }
+                    }
+                }
+            });
+
+            shearChart = new Chart(document.getElementById('shearChart'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Shear Force (kN)',
+                        data: result.data.map(d => d.shear),
+                        borderColor: 'blue',
+                        backgroundColor: 'rgba(0,0,255,0.1)',
+                        fill: true,
+                        tension: 0,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { title: { display: true, text: 'Shear Force Diagram' } },
+                    scales: {
+                        x: { title: { display: true, text: 'Span (m)' } },
+                        y: { title: { display: true, text: 'Shear (kN)' } }
+                    }
+                }
+            });
+
+            deflectionChart = new Chart(document.getElementById('deflectionChart'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Deflection (mm)',
+                        data: result.data.map(d => d.deflection),
+                        borderColor: 'green',
+                        backgroundColor: 'rgba(0,255,0,0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { title: { display: true, text: 'Deflection Diagram' } },
+                    scales: {
+                        x: { title: { display: true, text: 'Span (m)' } },
+                        y: { title: { display: true, text: 'Deflection (mm)' } }
+                    }
+                }
+            });
+        }
+
+        window.onload = function() {
+            calculate();
         };
-
-        var layupDrawer = new LayupDrawer();
-        var playground = document.getElementById('playground');
-
-        layupDrawer.init(playground);
-        layupDrawer.drawLayup(cltLayup);
     </script>
 </body>
 </html>
