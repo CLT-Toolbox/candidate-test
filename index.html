@@ -3,13 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<<<<<<< Updated upstream
     <title>Layup Drawer</title>
 </head>
 <body>
     <canvas width="500" height="800" id="playground"></canvas>
+=======
+    <title>Beam Analysis Plot</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <form>
+        <table>
+            <tr>
+                <td>Condition</td>
+                <td>
+                    <select name="condition" id="condition">
+                        <option value="simply-supported">Simply Supported</option>
+                        <option value="two-span-unequal">Two Span Unequal</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>Load Force (w)</td>
+                <td><input type="text" id="w"> kN/m</td>
+            </tr>
+            <tr>
+                <td>Primary Span (L1)</td>
+                <td><input type="text" id="primarySpan" value="4"> m</td>
+            </tr>
+            <tr>
+                <td>Secondary Span (L2)</td>
+                <td><input type="text" id="secondarySpan" value=""> m</td>
+            </tr>
+            <tr>
+                <td colspan="2"><hr></td>
+            </tr>
+            <tr>
+                <td>j2</td>
+                <td><input type="text" id="j2" value="2"></td>
+            </tr>
+            <tr>
+                <td>Bending Stiffnes (EI)</td>
+                <td><input type="text" id="EI" value="3150000000000"> Nmm<sup>2</sup></td>
+            </tr>
+            <tr>
+                <td colspan="2"><hr></td>
+            </tr>
+            <tr>
+                <td colspan="2" style="text-align: center;">
+                    <button type="button" id="calculate">Calculate</button>
+                </td>
+            </tr>
+        </table>
+    </form>
+    <canvas id="deflection_plot"></canvas>
+    <canvas id="shear_force_plot"></canvas>
+    <canvas id="bending_moment_plot"></canvas>
+
+    <script src="js/beam-analysis.js"></script>
+    <script src="js/analysis-plotter.js"></script>
+>>>>>>> Stashed changes
 
     <script src="js/layup-drawer.js"></script>
     <script>
+<<<<<<< Updated upstream
         var cltLayup = {
             t1 : {
                 label : 'T1',
@@ -17,6 +75,13 @@
                 angle : 0,      // in degree
                 grade : 'MGP10',
             },
+=======
+        function floatVal(id) {
+            return parseFloat(
+                document.getElementById(id).value
+            );
+        }
+>>>>>>> Stashed changes
 
             t2 : {
                 label : 'T2',
@@ -32,12 +97,21 @@
                 grade : 'MGP5',
             },
 
+<<<<<<< Updated upstream
             t4 : {
                 label : 'T4',
                 thickness : 30, // in mm
                 angle : 90,     // in degree
                 grade : 'MGP6',
             },
+=======
+            beam.primarySpan    = floatVal('primarySpan');
+            beam.secondarySpan  = floatVal('secondarySpan');
+            beam.material       = new Material('No Name', {
+                EI : floatVal('EI'),
+                j2 : floatVal('j2')
+            });
+>>>>>>> Stashed changes
 
             t5 : {
                 label : 'T5',
