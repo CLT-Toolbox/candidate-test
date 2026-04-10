@@ -110,26 +110,84 @@ BeamAnalysis.analyzer.simplySupported = class {
         this.load = load;
     }
     getDeflectionEquation(beam, load) {
+        var L = Number(beam.primarySpan);
+        var w = Number(load);
+        var EI = Number(beam.material && beam.material.properties && beam.material.properties.EI);
+        var j2 = Number(beam.material && beam.material.properties && beam.material.properties.j2);
+        var loadFactor = Number.isFinite(j2) ? j2 : 1;
+        var effectiveEI = EI / Math.pow(1000, 3); // N-mm2 -> kN-m2
+
         return function (x) {
+            var X = Number(x);
+            var y = null;
+
+            if (
+                Number.isFinite(X) &&
+                Number.isFinite(L) &&
+                Number.isFinite(w) &&
+                Number.isFinite(effectiveEI) &&
+                effectiveEI !== 0 &&
+                X >= 0 &&
+                X <= L
+            ) {
+                y = -(
+                    (w * X) /
+                    (24 * effectiveEI) *
+                    (Math.pow(L, 3) - 2 * L * Math.pow(X, 2) + Math.pow(X, 3))
+                ) * loadFactor * 1000; // m -> mm
+            }
+
             return {
-                x: x,
-                y: null
+                x: X,
+                y: y
             };
         };
     }
     getBendingMomentEquation(beam, load) {
+        var L = Number(beam.primarySpan);
+        var w = Number(load);
+
         return function (x) {
+            var X = Number(x);
+            var y = null;
+
+            if (
+                Number.isFinite(X) &&
+                Number.isFinite(L) &&
+                Number.isFinite(w) &&
+                X >= 0 &&
+                X <= L
+            ) {
+                y = (w * X * (L - X)) / 2;
+            }
+
             return {
-                x: x,
-                y: null
+                x: X,
+                y: y
             };
         };
     }
     getShearForceEquation(beam, load) {
+        var L = Number(beam.primarySpan);
+        var w = Number(load);
+
         return function (x) {
+            var X = Number(x);
+            var y = null;
+
+            if (
+                Number.isFinite(X) &&
+                Number.isFinite(L) &&
+                Number.isFinite(w) &&
+                X >= 0 &&
+                X <= L
+            ) {
+                y = w * (L / 2 - X);
+            }
+
             return {
-                x: x,
-                y: null
+                x: X,
+                y: y
             };
         };
     }
@@ -148,26 +206,140 @@ BeamAnalysis.analyzer.twoSpanUnequal = class {
         this.load = load;
     }
     getDeflectionEquation(beam, load) {
+        var L1 = Number(beam.primarySpan);
+        var L2 = Number(beam.secondarySpan);
+        var w = Number(load);
+        var EI = Number(beam.material && beam.material.properties && beam.material.properties.EI);
+        var j2 = Number(beam.material && beam.material.properties && beam.material.properties.j2);
+        var loadFactor = Number.isFinite(j2) ? j2 : 1;
+        var totalLength = L1 + L2;
+        var effectiveEI = EI / Math.pow(1000, 3); // N-mm2 -> kN-m2
+
+        var supportMoment = -((w * Math.pow(L2, 3)) + (w * Math.pow(L1, 3))) / (8 * (L1 + L2));
+        var leftReaction = (supportMoment / L1) + ((w * L1) / 2);
+        var rightReaction = (supportMoment / L2) + ((w * L2) / 2);
+        var middleReaction = (w * L1) + (w * L2) - leftReaction - rightReaction;
+
         return function (x) {
+            var X = Number(x);
+            var y = null;
+
+            if (
+                Number.isFinite(X) &&
+                Number.isFinite(L1) &&
+                Number.isFinite(L2) &&
+                Number.isFinite(w) &&
+                Number.isFinite(effectiveEI) &&
+                effectiveEI !== 0 &&
+                Number.isFinite(leftReaction) &&
+                Number.isFinite(middleReaction) &&
+                X >= 0 &&
+                X <= totalLength
+            ) {
+                if (X <= L1) {
+                    y = (
+                        (X / (24 * effectiveEI)) *
+                        (
+                            (4 * leftReaction * Math.pow(X, 2)) -
+                            (w * Math.pow(X, 3)) +
+                            (w * Math.pow(L1, 3)) -
+                            (4 * leftReaction * Math.pow(L1, 2))
+                        )
+                    ) * 1000 * loadFactor;
+                } else {
+                    y = (
+                        (
+                            ((leftReaction * X) / 6) * (Math.pow(X, 2) - Math.pow(L1, 2)) +
+                            ((middleReaction * X) / 6) *
+                                (
+                                    Math.pow(X, 2) -
+                                    (3 * L1 * X) +
+                                    (3 * Math.pow(L1, 2))
+                                ) -
+                            (middleReaction * Math.pow(L1, 3)) / 6 -
+                            ((w * X) / 24) * (Math.pow(X, 3) - Math.pow(L1, 3))
+                        ) / effectiveEI
+                    ) * 1000 * loadFactor;
+                }
+            }
+
             return {
-                x: x,
-                y: null
+                x: X,
+                y: y
             };
         };
     }
     getBendingMomentEquation(beam, load) {
+        var L1 = Number(beam.primarySpan);
+        var L2 = Number(beam.secondarySpan);
+        var w = Number(load);
+        var totalLength = L1 + L2;
+        var supportMoment = -((w * Math.pow(L2, 3)) + (w * Math.pow(L1, 3))) / (8 * (L1 + L2));
+        var leftReaction = (supportMoment / L1) + ((w * L1) / 2);
+        var rightReaction = (supportMoment / L2) + ((w * L2) / 2);
+        var middleReaction = (w * L1) + (w * L2) - leftReaction - rightReaction;
+
         return function (x) {
+            var X = Number(x);
+            var y = null;
+
+            if (
+                Number.isFinite(X) &&
+                Number.isFinite(L1) &&
+                Number.isFinite(L2) &&
+                Number.isFinite(w) &&
+                Number.isFinite(leftReaction) &&
+                Number.isFinite(middleReaction) &&
+                X >= 0 &&
+                X <= totalLength
+            ) {
+                if (X <= L1) {
+                    y = (leftReaction * X) - (w * Math.pow(X, 2) / 2);
+                } else {
+                    y = (leftReaction * X) + (middleReaction * (X - L1)) - (w * Math.pow(X, 2) / 2);
+                }
+            }
+
             return {
-                x: x,
-                y: null
+                x: X,
+                y: y
             };
         };
     }
     getShearForceEquation(beam, load) {
+        var L1 = Number(beam.primarySpan);
+        var L2 = Number(beam.secondarySpan);
+        var w = Number(load);
+        var totalLength = L1 + L2;
+        var supportMoment = -((w * Math.pow(L2, 3)) + (w * Math.pow(L1, 3))) / (8 * (L1 + L2));
+        var leftReaction = (supportMoment / L1) + ((w * L1) / 2);
+        var rightReaction = (supportMoment / L2) + ((w * L2) / 2);
+        var middleReaction = (w * L1) + (w * L2) - leftReaction - rightReaction;
+
         return function (x) {
+            var X = Number(x);
+            var y = null;
+
+            if (
+                Number.isFinite(X) &&
+                Number.isFinite(L1) &&
+                Number.isFinite(L2) &&
+                Number.isFinite(w) &&
+                Number.isFinite(leftReaction) &&
+                Number.isFinite(middleReaction) &&
+                X >= 0 &&
+                X <= totalLength
+            ) {
+                if (X < L1) {
+                    y = leftReaction - (w * X);
+                } else {
+                    y = leftReaction + middleReaction - (w * X);
+                }
+            }
+
             return {
-                x: x,
-                y: null
+                x: X,
+                y: y
             };
         };
     }
