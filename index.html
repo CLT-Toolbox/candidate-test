@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Beam Analysis Plot</title>
+    <style>
+        canvas {
+            display: block;
+            width: 100%;
+            height: 320px;
+            margin: 20px 0;
+            border: 1px solid #ddd;
+        }
+    </style>
 </head>
 <body>
     <form>
@@ -19,7 +28,7 @@
             </tr>
             <tr>
                 <td>Load Force (w)</td>
-                <td><input type="text" id="w"> kN/m</td>
+                <td><input type="text" id="w" value="4.5"> kN/m</td>
             </tr>
             <tr>
                 <td>Primary Span (L1)</td>
@@ -56,6 +65,7 @@
     <canvas id="shear_force_plot"></canvas>
     <canvas id="bending_moment_plot"></canvas>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="js/beam-analysis.js"></script>
     <script src="js/analysis-plotter.js"></script>
 
@@ -74,13 +84,40 @@
         }
 
         document.getElementById('calculate').addEventListener('click', function(e) {
+            var condition = stringVal('condition');
+            var load = floatVal('w');
+            var primarySpan = floatVal('primarySpan');
+            var secondarySpan = floatVal('secondarySpan');
+            var EI = floatVal('EI');
+            var j2 = floatVal('j2');
+
+            if (!Number.isFinite(load)) {
+                alert('Please fill in Load Force (w).');
+                return;
+            }
+
+            if (!Number.isFinite(primarySpan) || primarySpan <= 0) {
+                alert('Please fill in Primary Span (L1) with a valid number.');
+                return;
+            }
+
+            if (condition === 'two-span-unequal' && (!Number.isFinite(secondarySpan) || secondarySpan <= 0)) {
+                alert('Please fill in Secondary Span (L2) with a valid number.');
+                return;
+            }
+
+            if (!Number.isFinite(EI) || EI <= 0) {
+                alert('Please fill in EI with a valid number.');
+                return;
+            }
+
             var beam = new Beam();
 
-            beam.primarySpan    = floatVal('primarySpan');
-            beam.secondarySpan  = floatVal('secondarySpan');
+            beam.primarySpan    = primarySpan;
+            beam.secondarySpan  = secondarySpan;
             beam.material       = new Material('No Name', {
-                EI : floatVal('EI'),
-                j2 : floatVal('j2')
+                EI : EI,
+                j2 : Number.isFinite(j2) ? j2 : 1
             });
 
             var plotter = {
@@ -90,9 +127,9 @@
             }
 
             var beamAnalysis        = new BeamAnalysis();
-            var deflectionData      = beamAnalysis.getDeflection(beam, floatVal('w'), stringVal('condition'));
-            var bendingMomentData   = beamAnalysis.getBendingMoment(beam, floatVal('w'), stringVal('condition'));
-            var shearForceData      = beamAnalysis.getShearForce(beam, floatVal('w'), stringVal('condition'));
+            var deflectionData      = beamAnalysis.getDeflection(beam, load, condition);
+            var bendingMomentData   = beamAnalysis.getBendingMoment(beam, load, condition);
+            var shearForceData      = beamAnalysis.getShearForce(beam, load, condition);
 
             plotter.deflection.plot(deflectionData);
             plotter.shearForce.plot(shearForceData);
