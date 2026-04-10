@@ -41,13 +41,15 @@
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="layup.html">
+                    <a class="nav-link menu-link {{ request()->routeIs('clt-layup.*') ? 'active' : '' }}"
+                        href="#">
                         <i class="mdi mdi-layers-plus"></i> <span data-key="t-layup">Layup</span>
                     </a>
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="layer.html">
+                    <a class="nav-link menu-link {{ request()->routeIs('clt-layer.*') ? 'active' : '' }}"
+                        href="#">
                         <i class="mdi mdi-layers-outline"></i> <span data-key="t-layer">Layer</span>
                     </a>
                 </li>
