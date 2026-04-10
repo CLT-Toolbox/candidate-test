@@ -11,8 +11,6 @@
     <title>@yield('title') | Velzon - Admin & Dashboard Template</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta content="{{ csrf_token() }}" name="csrf-token">
-    <!-- App favicon -->
-    <link rel="shortcut icon" href="{{ asset('assets') }}/images/favicon.ico">
 
     <!--datatable css-->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" />
@@ -112,6 +110,57 @@
     <script src="{{ asset('assets') }}/js/pages/datatables.init.js"></script>
     <!-- App js -->
     <script src="{{ asset('assets') }}/js/app.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+
+            $('body').on('click', '.logout-link', function(e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Logout',
+                    text: "Are you sure?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, logout!',
+                    cancelButtonText: 'Cancel',
+                }).then((willLogout) => {
+                    if (willLogout.value) {
+                        Swal.fire({
+                            title: 'Processing...',
+                            text: 'Please wait a moment',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+                        logoutUser();
+                    }
+                });
+            })
+
+            function logoutUser() {
+                $.ajax({
+                    url: "{{ route('logout') }}",
+                    type: 'POST',
+                    data: $('#logout-form').serialize(),
+                    success: function(response) {
+                        window.location.href = "{{ route('login') }}";
+                    },
+                    error: function(xhr, ajaxOptions, thrownError) {
+                        alert(xhr.status + "\n" + xhr.responseText + "\n" +
+                            thrownError);
+                    }
+                });
+            }
+        })
+    </script>
 
     @yield('script')
 </body>

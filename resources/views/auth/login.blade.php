@@ -1,47 +1,119 @@
-<x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+@extends('layouts.components.auth')
+@section('title', 'Sign In')
+@section('content')
+    <div class="p-2 mt-4">
+        <form id="loginForm">
+            <div class="mb-3">
+                <label for="email" class="form-label">Email <span style="color:red">*</span></label>
+                <input type="text" class="form-control" id="email" name="email" placeholder="Enter email">
+                <small class="text-danger errorEmail mt-2"></small>
+            </div>
 
-    <form method="POST" action="{{ route('login') }}">
-        @csrf
+            <div class="mb-3">
+                <div class="float-end">
+                    <a href="{{ route('password.request') }}" class="text-muted">Forgot
+                        password?</a>
+                </div>
+                <label class="form-label" for="password-input">Password <span style="color:red">*</span></label>
+                <div class="position-relative auth-pass-inputgroup mb-3">
+                    <input type="password" class="form-control pe-5 password-input" placeholder="Enter password"
+                        id="password" name="password">
+                    <button
+                        class="btn btn-link position-absolute end-0 top-0 text-decoration-none text-muted shadow-none password-addon"
+                        type="button" id="password-addon"><i class="ri-eye-fill align-middle"></i></button>
+                    <small class="text-danger errorPassword mt-2"></small>
+                </div>
+            </div>
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="" id="remember_me" name="remember">
+                <label class="form-check-label" for="remember_me">Remember
+                    me</label>
+            </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
+            <div class="mt-4">
+                <button class="btn btn-success w-100" type="submit">Sign In</button>
+            </div>
+        </form>
+    </div>
+@endsection
 
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
+@section('script')
+    <script>
+        $(document).ready(function() {
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
 
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
+            $('#email').on('input', function() {
+                $(this).removeClass('is-invalid');
+                $('.errorEmail').html('');
+            });
 
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:focus:ring-offset-gray-800" name="remember">
-                <span class="ms-2 text-sm text-gray-600 dark:text-gray-400">{{ __('Remember me') }}</span>
-            </label>
-        </div>
+            $('#password').on('input', function() {
+                $(this).removeClass('is-invalid');
+                $('.errorPassword').html('');
+            });
 
-        <div class="flex items-center justify-end mt-4">
-            @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
-                </a>
-            @endif
+            $('#loginForm').submit(function(e) {
+                e.preventDefault();
 
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
-        </div>
-    </form>
-</x-guest-layout>
+                Swal.fire({
+                    title: 'Processing...',
+                    text: 'Please wait a moment',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                $.ajax({
+                    data: $(this).serialize(),
+                    url: "{{ route('login') }}",
+                    type: "POST",
+                    dataType: 'json',
+                    beforeSend: function() {
+                        $('#login').prop('disabled', true).html(
+                            '<i class="mdi mdi-loading mdi-spin me-2"></i> Processing...'
+                        );
+
+                        $('.form-control').removeClass('is-invalid');
+                        $('.text-danger').html('');
+                    },
+                    complete: function() {
+                        $('#login').prop('disabled', false).text('Sign In');
+                        Swal.close();
+                    },
+                    success: function(response) {
+                        if (response.redirect) {
+                            window.location.href = response.redirect;
+                        }
+                    },
+                    error: function(xhr) {
+                        if (xhr.status === 422) {
+                            let errors = xhr.responseJSON.errors;
+                            if (errors.email) {
+                                $('#email').addClass('is-invalid');
+                                $('.errorEmail').html(errors.email.join('<br>'));
+                            }
+                            if (errors.password) {
+                                $('#password').addClass('is-invalid');
+                                $('.errorPassword').html(errors.password.join('<br>'));
+                            }
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'An error occurred, please try again.',
+                                confirmButtonColor: '#3085d6',
+                                confirmButtonText: 'OK'
+                            });
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+@endsection
