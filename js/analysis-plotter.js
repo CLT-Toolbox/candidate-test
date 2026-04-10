@@ -56,21 +56,25 @@ class AnalysisPlotter {
             });
         }
 
-        if (typeof Chart === 'undefined') {
+        try {
+            if (typeof Chart === 'undefined') {
+                throw new Error('Chart.js not available');
+            }
+
+            if (!AnalysisPlotter.instances) {
+                AnalysisPlotter.instances = {};
+            }
+
+            if (AnalysisPlotter.instances[this.container]) {
+                AnalysisPlotter.instances[this.container].destroy();
+            }
+
+            var config = AnalysisPlotter.getChartConfig(this.container, points, totalSpan);
+            AnalysisPlotter.instances[this.container] = new Chart(canvas, config);
+        } catch (err) {
+            console.warn('Chart render failed, using fallback canvas renderer:', err);
             AnalysisPlotter.drawFallback(canvas, points, totalSpan, this.container);
-            return;
         }
-
-        if (!AnalysisPlotter.instances) {
-            AnalysisPlotter.instances = {};
-        }
-
-        if (AnalysisPlotter.instances[this.container]) {
-            AnalysisPlotter.instances[this.container].destroy();
-        }
-
-        var config = AnalysisPlotter.getChartConfig(this.container, points, totalSpan);
-        AnalysisPlotter.instances[this.container] = new Chart(canvas, config);
     }
 }
 
