@@ -110,26 +110,33 @@ BeamAnalysis.analyzer.simplySupported = class {
         this.load = load;
     }
     getDeflectionEquation(beam, load) {
+        var span = beam.primarySpan;
+        var EI = beam.material.properties.EI;
+
         return function (x) {
             return {
                 x: x,
-                y: null
+                y: (-load * x * (Math.pow(span, 3) - (2 * span * Math.pow(x, 2)) + Math.pow(x, 3))) / (24 * (EI / Math.pow(1000, 3))) * 1000
             };
         };
     }
     getBendingMomentEquation(beam, load) {
+        var span = beam.primarySpan;
+
         return function (x) {
             return {
                 x: x,
-                y: null
+                y: (load * x * (span - x)) / 2
             };
         };
     }
     getShearForceEquation(beam, load) {
+        var span = beam.primarySpan;
+
         return function (x) {
             return {
                 x: x,
-                y: null
+                y: load * ((span / 2) - x)
             };
         };
     }
@@ -148,27 +155,100 @@ BeamAnalysis.analyzer.twoSpanUnequal = class {
         this.load = load;
     }
     getDeflectionEquation(beam, load) {
+        var l1 = beam.primarySpan;
+        var EI = beam.material.properties.EI;
+        var reaction = this.getReactions(beam, load);
+        var r1 = reaction.r1;
+        var r2 = reaction.r2;
+
         return function (x) {
+            var y;
+
+            if (x <= l1) {
+                y = (
+                    (x / (24 * (EI / Math.pow(1000, 3)))) *
+                    (
+                        (4 * r1 * Math.pow(x, 2)) -
+                        (load * Math.pow(x, 3)) +
+                        (load * Math.pow(l1, 3)) -
+                        (4 * r1 * Math.pow(l1, 2))
+                    )
+                ) * 1000;
+            } else {
+                y = (
+                    (
+                        ((r1 * x / 6) * (Math.pow(x, 2) - Math.pow(l1, 2))) +
+                        ((r2 * x / 6) * (Math.pow(x, 2) - (3 * l1 * x) + (3 * Math.pow(l1, 2)))) -
+                        (r2 * Math.pow(l1, 3) / 6) -
+                        ((load * x / 24) * (Math.pow(x, 3) - Math.pow(l1, 3)))
+                    ) / (EI / Math.pow(1000, 3))
+                ) * 1000;
+            }
+
             return {
                 x: x,
-                y: null
+                y: y
             };
         };
     }
     getBendingMomentEquation(beam, load) {
+        var l1 = beam.primarySpan;
+        var reaction = this.getReactions(beam, load);
+        var r1 = reaction.r1;
+        var r2 = reaction.r2;
+
         return function (x) {
+            var y;
+
+            if (x <= l1) {
+                y = (r1 * x) - (0.5 * load * Math.pow(x, 2));
+            } else {
+                y = ((r1 * x) + (r2 * (x - l1))) - (0.5 * load * Math.pow(x, 2));
+            }
+
             return {
                 x: x,
-                y: null
+                y: y
             };
         };
     }
     getShearForceEquation(beam, load) {
-        return function (x) {
+        var l1 = beam.primarySpan;
+        var reaction = this.getReactions(beam, load);
+        var r1 = reaction.r1;
+        var r2 = reaction.r2;
+        var eq = function (x) {
+            var y;
+
+            if (x < l1) {
+                y = r1 - (load * x);
+            } else {
+                y = (r1 + r2) - (load * x);
+            }
+
             return {
                 x: x,
-                y: null
+                y: y
             };
+        };
+
+        eq.discontinuities = [l1];
+
+        return eq;
+    }
+    getReactions(beam, load) {
+        var l1 = beam.primarySpan;
+        var l2 = beam.secondarySpan;
+        var m1 = -((load * Math.pow(l2, 3)) + (load * Math.pow(l1, 3))) / (8 * (l1 + l2));
+        var r1 = (m1 / l1) + ((load * l1) / 2);
+        var r3 = (m1 / l2) + ((load * l2) / 2);
+        var r2 = (load * l1) + (load * l2) - r1 - r3;
+
+        return {
+            m1: m1,
+            r1: r1,
+            r2: r2,
+            r3: r3
         };
     }
 };

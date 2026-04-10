@@ -19,7 +19,7 @@
             </tr>
             <tr>
                 <td>Load Force (w)</td>
-                <td><input type="text" id="w"> kN/m</td>
+                <td><input type="text" id="w" value="20"> kN/m</td>
             </tr>
             <tr>
                 <td>Primary Span (L1)</td>
@@ -27,7 +27,7 @@
             </tr>
             <tr>
                 <td>Secondary Span (L2)</td>
-                <td><input type="text" id="secondarySpan" value=""> m</td>
+                <td><input type="text" id="secondarySpan" value="5"> m</td>
             </tr>
             <tr>
                 <td colspan="2"><hr></td>
@@ -52,11 +52,20 @@
             </tr>
         </table>
     </form>
-    <canvas id="deflection_plot"></canvas>
-    <canvas id="shear_force_plot"></canvas>
     <canvas id="bending_moment_plot"></canvas>
+    <canvas id="shear_force_plot"></canvas>
+    <div style="max-width: 400px; margin: 10px auto; text-align: center;">
+        <div style="font-weight: 600; margin-bottom: 8px;">Load Type for Deflection Plot:</div>
+        <select id="deflectionLoadType" style="width: 100%; padding: 8px;">
+            <option value="1">LC1 - shortterm : 1gk + 0.70qk</option>
+            <option value="0.7">LC2 - frequent : 1gk + 0.50qk</option>
+            <option value="0.5">LC3 - longterm : 1gk + 0.30qk</option>
+        </select>
+    </div>
+    <canvas id="deflection_plot"></canvas>
 
     <script src="js/beam-analysis.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="js/analysis-plotter.js"></script>
 
     <script>
@@ -73,29 +82,68 @@
             return document.getElementById(id).value;
         }
 
-        document.getElementById('calculate').addEventListener('click', function(e) {
-            var beam = new Beam();
+        function deflectionLoad(load) {
+            var factor = floatVal('deflectionLoadType');
 
+            if (isNaN(factor)) {
+                factor = 1;
+            }
+
+            return load * factor;
+        }
+
+        var plotter = {
+            bendingMoment   : new AnalysisPlotter('bending_moment_plot'),
+            shearForce      : new AnalysisPlotter('shear_force_plot'),
+            deflection      : new AnalysisPlotter('deflection_plot')
+        };
+        var beamAnalysis = new BeamAnalysis();
+        var hasCalculated = false;
+
+        function buildBeam(condition) {
+            var beam = new Beam();
             beam.primarySpan    = floatVal('primarySpan');
-            beam.secondarySpan  = floatVal('secondarySpan');
+            beam.secondarySpan  = condition === 'two-span-unequal' ? floatVal('secondarySpan') : 0;
             beam.material       = new Material('No Name', {
                 EI : floatVal('EI')
             });
+            return beam;
+        }
 
-            var plotter = {
-                deflection      : new AnalysisPlotter('deflection_plot'),
-                shearForce      : new AnalysisPlotter('shear_force_plot'),
-                bendingMoment   : new AnalysisPlotter('bending_moment_plot')
+        function renderAll() {
+            var condition = stringVal('condition');
+            var load = floatVal('w');
+            var beam = buildBeam(condition);
+
+            var deflectionData      = beamAnalysis.getDeflection(beam, deflectionLoad(load), condition);
+            var bendingMomentData   = beamAnalysis.getBendingMoment(beam, load, condition);
+            var shearForceData      = beamAnalysis.getShearForce(beam, load, condition);
+
+            plotter.bendingMoment.plot(bendingMomentData);
+            plotter.shearForce.plot(shearForceData);
+            plotter.deflection.plot(deflectionData);
+            hasCalculated = true;
+        }
+
+        function renderDeflectionOnly() {
+            if (!hasCalculated) {
+                return;
             }
 
-            var beamAnalysis        = new BeamAnalysis();
-            var deflectionData      = beamAnalysis.getDeflection(beam, floatVal('w'), stringVal('condition'));
-            var bendingMomentData   = beamAnalysis.getBendingMoment(beam, floatVal('w'), stringVal('condition'));
-            var shearForceData      = beamAnalysis.getShearForce(beam, floatVal('w'), stringVal('condition'));
+            var condition = stringVal('condition');
+            var load = floatVal('w');
+            var beam = buildBeam(condition);
+            var deflectionData = beamAnalysis.getDeflection(beam, deflectionLoad(load), condition);
 
             plotter.deflection.plot(deflectionData);
-            plotter.shearForce.plot(shearForceData);
-            plotter.bendingMoment.plot(bendingMomentData);
+        }
+
+        document.getElementById('calculate').addEventListener('click', function() {
+            renderAll();
+        });
+
+        document.getElementById('deflectionLoadType').addEventListener('change', function() {
+            renderDeflectionOnly();
         });
     </script>
 </body>
