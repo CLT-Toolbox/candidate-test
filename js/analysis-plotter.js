@@ -56,25 +56,7 @@ class AnalysisPlotter {
             });
         }
 
-        try {
-            if (typeof Chart === 'undefined') {
-                throw new Error('Chart.js not available');
-            }
-
-            if (!AnalysisPlotter.instances) {
-                AnalysisPlotter.instances = {};
-            }
-
-            if (AnalysisPlotter.instances[this.container]) {
-                AnalysisPlotter.instances[this.container].destroy();
-            }
-
-            var config = AnalysisPlotter.getChartConfig(this.container, points, totalSpan);
-            AnalysisPlotter.instances[this.container] = new Chart(canvas, config);
-        } catch (err) {
-            console.warn('Chart render failed, using fallback canvas renderer:', err);
-            AnalysisPlotter.drawFallback(canvas, points, totalSpan, this.container);
-        }
+        AnalysisPlotter.drawSvg(canvas, points, totalSpan, this.container);
     }
 }
 
@@ -210,4 +192,72 @@ AnalysisPlotter.drawFallback = function (canvas, points, totalSpan, container) {
     ctx.rotate(-Math.PI / 2);
     ctx.fillText(yLabel, 0, 0);
     ctx.restore();
+};
+
+AnalysisPlotter.drawSvg = function (canvas, points, totalSpan, container) {
+    if (!points || points.length === 0) {
+        return;
+    }
+
+    var width = Math.max(canvas.clientWidth, 500);
+    var height = Math.max(canvas.clientHeight, 320);
+    var pad = { left: 56, right: 20, top: 16, bottom: 36 };
+    var plotW = width - pad.left - pad.right;
+    var plotH = height - pad.top - pad.bottom;
+
+    var minY = points[0].y;
+    var maxY = points[0].y;
+    for (var i = 1; i < points.length; i++) {
+        minY = Math.min(minY, points[i].y);
+        maxY = Math.max(maxY, points[i].y);
+    }
+    minY = Math.min(minY, 0);
+    maxY = Math.max(maxY, 0);
+    if (Math.abs(maxY - minY) < 1e-9) {
+        minY -= 1;
+        maxY += 1;
+    }
+
+    function mapX(x) {
+        return pad.left + (x / totalSpan) * plotW;
+    }
+    function mapY(y) {
+        return pad.top + ((maxY - y) / (maxY - minY)) * plotH;
+    }
+
+    var polyline = '';
+    for (var j = 0; j < points.length; j++) {
+        polyline += mapX(points[j].x) + ',' + mapY(points[j].y) + ' ';
+    }
+
+    var yLabel = 'Deflection (mm)';
+    if (container === 'bending_moment_plot') {
+        yLabel = 'Bending Moment (kNm)';
+    } else if (container === 'shear_force_plot') {
+        yLabel = 'Shear Force (kN)';
+    }
+
+    var zeroY = mapY(0);
+    var wrapperId = container + '_svg_wrap';
+    var wrapper = document.getElementById(wrapperId);
+    if (!wrapper) {
+        wrapper = document.createElement('div');
+        wrapper.id = wrapperId;
+        wrapper.style.width = '100%';
+        wrapper.style.height = '320px';
+        wrapper.style.border = '1px solid #ddd';
+        wrapper.style.margin = '20px 0';
+        canvas.parentNode.insertBefore(wrapper, canvas);
+    }
+    canvas.style.display = 'none';
+
+    wrapper.innerHTML =
+        '<svg xmlns="http://www.w3.org/2000/svg" width="' + width + '" height="' + height + '" viewBox="0 0 ' + width + ' ' + height + '">' +
+            '<rect x="0" y="0" width="' + width + '" height="' + height + '" fill="#fff"/>' +
+            '<line x1="' + pad.left + '" y1="' + zeroY + '" x2="' + (width - pad.right) + '" y2="' + zeroY + '" stroke="#c8c8c8" stroke-width="1"/>' +
+            '<line x1="' + pad.left + '" y1="' + pad.top + '" x2="' + pad.left + '" y2="' + (height - pad.bottom) + '" stroke="#c8c8c8" stroke-width="1"/>' +
+            '<polyline points="' + polyline.trim() + '" fill="none" stroke="red" stroke-width="2.5"/>' +
+            '<text x="' + (width / 2 - 24) + '" y="' + (height - 10) + '" font-size="12" fill="#333">Span (m)</text>' +
+            '<text x="18" y="' + (height / 2 + 24) + '" transform="rotate(-90 18 ' + (height / 2 + 24) + ')" font-size="12" fill="#333">' + yLabel + '</text>' +
+        '</svg>';
 };
