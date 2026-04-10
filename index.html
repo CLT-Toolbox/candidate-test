@@ -3,56 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Layup Drawer</title>
+    <title>Beam Analysis Plot</title>
 </head>
 <body>
-    <canvas width="500" height="800" id="playground"></canvas>
+    <form>
+        <table>
+            <tr>
+                <td>Condition</td>
+                <td>
+                    <select name="condition" id="condition">
+                        <option value="simply-supported">Simply Supported</option>
+                        <option value="two-span-unequal">Two Span Unequal</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>Load Force (w)</td>
+                <td><input type="text" id="w" value="20"> kN/m</td>
+            </tr>
+            <tr>
+                <td>Primary Span (L1)</td>
+                <td><input type="text" id="primarySpan" value="4"> m</td>
+            </tr>
+            <tr>
+                <td>Secondary Span (L2)</td>
+                <td><input type="text" id="secondarySpan" value="5"> m</td>
+            </tr>
+            <tr>
+                <td colspan="2"><hr></td>
+            </tr>
+            <tr>
+                <td>j2</td>
+                <td><input type="text" id="j2" value="2"></td>
+            </tr>
+            <tr>
+                <td>Bending Stiffnes (EI)</td>
+                <td><input type="text" id="EI" value="3150000000000"> Nmm<sup>2</sup></td>
+            </tr>
 
-    <script src="js/layup-drawer.js"></script>
+            <tr>
+                <td colspan="2"><hr></td>
+            </tr>
+
+            <tr>
+                <td colspan="2" style="text-align: center;">
+                    <button type="button" id="calculate">Calculate</button>
+                </td>
+            </tr>
+        </table>
+    </form>
+    <canvas id="bending_moment_plot"></canvas>
+    <canvas id="shear_force_plot"></canvas>
+    <div style="max-width: 400px; margin: 10px auto; text-align: center;">
+        <div style="font-weight: 600; margin-bottom: 8px;">Load Type for Deflection Plot:</div>
+        <select id="deflectionLoadType" style="width: 100%; padding: 8px;">
+            <option value="1">LC1 - shortterm : 1gk + 0.70qk</option>
+            <option value="0.7">LC2 - frequent : 1gk + 0.50qk</option>
+            <option value="0.5">LC3 - longterm : 1gk + 0.30qk</option>
+        </select>
+    </div>
+    <canvas id="deflection_plot"></canvas>
+
+    <script src="js/beam-analysis.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="js/analysis-plotter.js"></script>
+
     <script>
-        var cltLayup = {
-            t1 : {
-                label : 'T1',
-                thickness : 45, // in mm
-                angle : 0,      // in degree
-                grade : 'MGP10',
-            },
+        /**
+         * Get float value of specified field
+         */
+        function floatVal(id) {
+            return parseFloat(
+                document.getElementById(id).value
+            );
+        }
 
-            t2 : {
-                label : 'T2',
-                thickness : 30, // in mm
-                angle : 90,     // in degree
-                grade : 'MGP6',
-            },
+        function stringVal(id) {
+            return document.getElementById(id).value;
+        }
 
-            t3 : {
-                label : 'T3',
-                thickness : 30, // in mm
-                angle : 0,      // in degree
-                grade : 'MGP5',
-            },
+        function deflectionLoad(load) {
+            var factor = floatVal('deflectionLoadType');
 
-            t4 : {
-                label : 'T4',
-                thickness : 30, // in mm
-                angle : 90,     // in degree
-                grade : 'MGP6',
-            },
+            if (isNaN(factor)) {
+                factor = 1;
+            }
 
-            t5 : {
-                label : 'T5',
-                thickness : 45, // in mm
-                angle : 0,      // in degree
-                grade : 'MGP10',
-            },
+            return load * factor;
+        }
 
+        var plotter = {
+            bendingMoment   : new AnalysisPlotter('bending_moment_plot'),
+            shearForce      : new AnalysisPlotter('shear_force_plot'),
+            deflection      : new AnalysisPlotter('deflection_plot')
         };
+        var beamAnalysis = new BeamAnalysis();
+        var hasCalculated = false;
 
-        var layupDrawer = new LayupDrawer();
-        var playground = document.getElementById('playground');
+        function buildBeam(condition) {
+            var beam = new Beam();
+            beam.primarySpan    = floatVal('primarySpan');
+            beam.secondarySpan  = condition === 'two-span-unequal' ? floatVal('secondarySpan') : 0;
+            beam.material       = new Material('No Name', {
+                EI : floatVal('EI')
+            });
+            return beam;
+        }
 
-        layupDrawer.init(playground);
-        layupDrawer.drawLayup(cltLayup);
+        function renderAll() {
+            var condition = stringVal('condition');
+            var load = floatVal('w');
+            var beam = buildBeam(condition);
+
+            var deflectionData      = beamAnalysis.getDeflection(beam, deflectionLoad(load), condition);
+            var bendingMomentData   = beamAnalysis.getBendingMoment(beam, load, condition);
+            var shearForceData      = beamAnalysis.getShearForce(beam, load, condition);
+
+            plotter.bendingMoment.plot(bendingMomentData);
+            plotter.shearForce.plot(shearForceData);
+            plotter.deflection.plot(deflectionData);
+            hasCalculated = true;
+        }
+
+        function renderDeflectionOnly() {
+            if (!hasCalculated) {
+                return;
+            }
+
+            var condition = stringVal('condition');
+            var load = floatVal('w');
+            var beam = buildBeam(condition);
+            var deflectionData = beamAnalysis.getDeflection(beam, deflectionLoad(load), condition);
+
+            plotter.deflection.plot(deflectionData);
+        }
+
+        document.getElementById('calculate').addEventListener('click', function() {
+            renderAll();
+        });
+
+        document.getElementById('deflectionLoadType').addEventListener('change', function() {
+            renderDeflectionOnly();
+        });
     </script>
 </body>
 </html>
