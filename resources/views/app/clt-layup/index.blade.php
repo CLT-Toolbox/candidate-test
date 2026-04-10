@@ -185,8 +185,8 @@
                     {{-- Side by side --}}
                     <div class="row g-3">
                         <div class="col-6">
-                            <div class="card border-secondary h-100">
-                                <div class="card-header bg-secondary text-white text-center py-2">
+                            <div class="card h-100" style="border: 1.5px solid #dee2e6;">
+                                <div class="card-header text-dark text-center py-2" style="background-color: #f8f9fa;">
                                     <i class="mdi mdi-database me-1"></i> Existing Data
                                 </div>
                                 <div class="card-body p-0">
@@ -207,16 +207,17 @@
                                         </tbody>
                                     </table>
                                 </div>
-                                <div class="card-footer text-center">
+                                <div class="card-footer text-center" style="background-color: #f8f9fa;">
                                     <button class="btn btn-outline-secondary btn-sm w-100" id="btnKeepExisting">
                                         ✔ Keep Existing
                                     </button>
                                 </div>
                             </div>
                         </div>
+
                         <div class="col-6">
-                            <div class="card border-primary h-100">
-                                <div class="card-header bg-primary text-white text-center py-2">
+                            <div class="card h-100 border-success">
+                                <div class="card-header bg-success text-white text-center py-2">
                                     <i class="mdi mdi-upload me-1"></i> Incoming Data
                                 </div>
                                 <div class="card-body p-0">
@@ -237,8 +238,8 @@
                                         </tbody>
                                     </table>
                                 </div>
-                                <div class="card-footer text-center">
-                                    <button class="btn btn-primary btn-sm w-100" id="btnAcceptIncoming">
+                                <div class="card-footer text-center" style="background-color: #f0faf4;">
+                                    <button class="btn btn-success btn-sm w-100" id="btnAcceptIncoming">
                                         ✔ Accept Incoming
                                     </button>
                                 </div>
@@ -253,7 +254,7 @@
                             <small id="conflictProgress" class="text-muted"></small>
                         </div>
                         <div class="progress" style="height: 6px;">
-                            <div class="progress-bar bg-primary" id="conflictProgressBar" style="width: 0%"></div>
+                            <div class="progress-bar bg-success" id="conflictProgressBar" style="width: 0%"></div>
                         </div>
                     </div>
                 </div>
@@ -473,9 +474,9 @@
                     error: function(xhr, status, errorText) {
                         if (xhr.status === 422) {
                             let errors = xhr.responseJSON.errors;
-                            if (errors.supplier_name) {
+                            if (errors.name) {
                                 $('#supplier_name').addClass('is-invalid');
-                                $('.errorSupplierName').html(errors.supplier_name.join('<br>'));
+                                $('.errorSupplierName').html(errors.name.join('<br>'));
                             }
                         } else {
                             Swal.fire({
@@ -643,21 +644,25 @@
                     $('#incoming' + cap).text(c.incoming[field]);
 
                     if (isDiff) {
-                        $('#existing' + cap + 'Row').addClass('table-warning');
-                        $('#incoming' + cap + 'Row').addClass('table-warning');
+                        $('#existing' + cap + 'Row').css('background-color', '#fff3cd');
+                        $('#incoming' + cap + 'Row').css('background-color', '#d1f0e0');
+                    } else {
+                        $('#existing' + cap + 'Row').css('background-color', '');
+                        $('#incoming' + cap + 'Row').css('background-color', '');
                     }
                 });
 
+
                 let status = resolvedStatus[index];
                 if (status === 'kept') {
-                    $('#btnKeepExisting').addClass('btn-secondary').removeClass('btn-outline-secondary');
-                    $('#btnAcceptIncoming').addClass('btn-outline-primary').removeClass('btn-primary');
+                    $('#btnKeepExisting').removeClass('btn-outline-secondary').addClass('btn-secondary');
+                    $('#btnAcceptIncoming').removeClass('btn-success').addClass('btn-outline-success');
                 } else if (status === 'accepted') {
-                    $('#btnAcceptIncoming').addClass('btn-primary').removeClass('btn-outline-primary');
-                    $('#btnKeepExisting').addClass('btn-outline-secondary').removeClass('btn-secondary');
+                    $('#btnKeepExisting').removeClass('btn-secondary').addClass('btn-outline-secondary');
+                    $('#btnAcceptIncoming').removeClass('btn-outline-success').addClass('btn-success');
                 } else {
-                    $('#btnKeepExisting').addClass('btn-outline-secondary').removeClass('btn-secondary');
-                    $('#btnAcceptIncoming').addClass('btn-outline-primary').removeClass('btn-primary');
+                    $('#btnKeepExisting').removeClass('btn-secondary').addClass('btn-outline-secondary');
+                    $('#btnAcceptIncoming').removeClass('btn-outline-success').addClass('btn-success');
                 }
 
                 let resolved = resolvedStatus.filter(r => r !== undefined).length;
@@ -694,7 +699,7 @@
                 renderConflict(currentConflict);
                 if (currentConflict < conflicts.length - 1) {
                     currentConflict++;
-                    renderConflict(currentConflict); 
+                    renderConflict(currentConflict);
                 }
             }
 
