@@ -241,6 +241,44 @@ AnalysisPlotter.drawSvg = function (canvas, points, totalSpan, container) {
     }
 
     var zeroY = mapY(0);
+    var xTicks = AnalysisPlotter.buildTicks(0, totalSpan, 9);
+    var yTicks = AnalysisPlotter.buildTicks(minY, maxY, 9);
+    var plotTop = pad.top;
+    var plotBottom = height - pad.bottom;
+    var plotLeft = pad.left;
+    var plotRight = width - pad.right;
+
+    var shade = '';
+    if (zeroY > plotTop && zeroY < plotBottom) {
+        shade =
+            '<rect x="' + plotLeft + '" y="' + plotTop + '" width="' + plotW + '" height="' + (zeroY - plotTop) + '" fill="#f5f5f5"/>' +
+            '<rect x="' + plotLeft + '" y="' + zeroY + '" width="' + plotW + '" height="' + (plotBottom - zeroY) + '" fill="#ebebeb"/>';
+    } else {
+        shade = '<rect x="' + plotLeft + '" y="' + plotTop + '" width="' + plotW + '" height="' + plotH + '" fill="#f5f5f5"/>';
+    }
+
+    var xGrid = '';
+    var xLabels = '';
+    for (var i = 0; i < xTicks.values.length; i++) {
+        var xv = xTicks.values[i];
+        var xp = mapX(xv);
+        xGrid += '<line x1="' + xp + '" y1="' + plotTop + '" x2="' + xp + '" y2="' + plotBottom + '" stroke="#d3d3d3" stroke-width="1"/>';
+        xLabels += '<text x="' + xp + '" y="' + (height - 12) + '" font-size="12" fill="#555" text-anchor="middle">' +
+            AnalysisPlotter.formatTick(xv, xTicks.step) +
+            '</text>';
+    }
+
+    var yGrid = '';
+    var yLabels = '';
+    for (var k = 0; k < yTicks.values.length; k++) {
+        var yv = yTicks.values[k];
+        var yp = mapY(yv);
+        yGrid += '<line x1="' + plotLeft + '" y1="' + yp + '" x2="' + plotRight + '" y2="' + yp + '" stroke="#d3d3d3" stroke-width="1"/>';
+        yLabels += '<text x="' + (plotLeft - 8) + '" y="' + (yp + 4) + '" font-size="12" fill="#555" text-anchor="end">' +
+            AnalysisPlotter.formatTick(yv, yTicks.step) +
+            '</text>';
+    }
+
     var wrapperId = container + '_svg_wrap';
     var wrapper = document.getElementById(wrapperId);
     if (!wrapper) {
@@ -257,10 +295,88 @@ AnalysisPlotter.drawSvg = function (canvas, points, totalSpan, container) {
     wrapper.innerHTML =
         '<svg xmlns="http://www.w3.org/2000/svg" width="' + width + '" height="' + height + '" viewBox="0 0 ' + width + ' ' + height + '">' +
             '<rect x="0" y="0" width="' + width + '" height="' + height + '" fill="#fff"/>' +
-            '<line x1="' + pad.left + '" y1="' + zeroY + '" x2="' + (width - pad.right) + '" y2="' + zeroY + '" stroke="#c8c8c8" stroke-width="1"/>' +
-            '<line x1="' + pad.left + '" y1="' + pad.top + '" x2="' + pad.left + '" y2="' + (height - pad.bottom) + '" stroke="#c8c8c8" stroke-width="1"/>' +
+            shade +
+            yGrid +
+            xGrid +
+            '<line x1="' + plotLeft + '" y1="' + zeroY + '" x2="' + plotRight + '" y2="' + zeroY + '" stroke="#b0b0b0" stroke-width="1.2"/>' +
+            '<line x1="' + plotLeft + '" y1="' + plotTop + '" x2="' + plotLeft + '" y2="' + plotBottom + '" stroke="#b0b0b0" stroke-width="1.2"/>' +
+            xLabels +
+            yLabels +
             '<polyline points="' + polyline.trim() + '" fill="none" stroke="red" stroke-width="2.5"/>' +
             '<text x="' + (width / 2 - 24) + '" y="' + (height - 10) + '" font-size="12" fill="#333">Span (m)</text>' +
             '<text x="18" y="' + (height / 2 + 24) + '" transform="rotate(-90 18 ' + (height / 2 + 24) + ')" font-size="12" fill="#333">' + yLabel + '</text>' +
         '</svg>';
+};
+
+AnalysisPlotter.niceNumber = function (range, round) {
+    var exponent = Math.floor(Math.log10(range));
+    var fraction = range / Math.pow(10, exponent);
+    var niceFraction;
+
+    if (round) {
+        if (fraction < 1.5) {
+            niceFraction = 1;
+        } else if (fraction < 3) {
+            niceFraction = 2;
+        } else if (fraction < 7) {
+            niceFraction = 5;
+        } else {
+            niceFraction = 10;
+        }
+    } else {
+        if (fraction <= 1) {
+            niceFraction = 1;
+        } else if (fraction <= 2) {
+            niceFraction = 2;
+        } else if (fraction <= 5) {
+            niceFraction = 5;
+        } else {
+            niceFraction = 10;
+        }
+    }
+
+    return niceFraction * Math.pow(10, exponent);
+};
+
+AnalysisPlotter.buildTicks = function (min, max, targetTickCount) {
+    var safeTarget = Math.max(2, targetTickCount || 8);
+    var safeMin = min;
+    var safeMax = max;
+
+    if (safeMin === safeMax) {
+        safeMin -= 1;
+        safeMax += 1;
+    }
+
+    var range = AnalysisPlotter.niceNumber(safeMax - safeMin, false);
+    var step = AnalysisPlotter.niceNumber(range / (safeTarget - 1), true);
+    var niceMin = Math.floor(safeMin / step) * step;
+    var niceMax = Math.ceil(safeMax / step) * step;
+
+    var values = [];
+    for (var v = niceMin; v <= niceMax + 0.5 * step; v += step) {
+        values.push(Number(v.toFixed(10)));
+    }
+
+    return {
+        min: niceMin,
+        max: niceMax,
+        step: step,
+        values: values
+    };
+};
+
+AnalysisPlotter.formatTick = function (value, step) {
+    var v = Math.abs(value) < 1e-9 ? 0 : value;
+    var absStep = Math.abs(step);
+    var decimals = 0;
+
+    if (absStep < 1) {
+        decimals = 2;
+    } else if (absStep < 2) {
+        decimals = 1;
+    }
+
+    var text = v.toFixed(decimals);
+    return text === '-0' || text === '-0.0' || text === '-0.00' ? '0' : text;
 };
