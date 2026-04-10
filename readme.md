@@ -7,7 +7,39 @@
 - Invite **@ikhsan017** and **@dhiaaziz** as collaborators.
 - Follow the setup instructions provided in the repository before running the project.
 
-## 2. Feature Requirements
+## 2. Installation
+
+```bash
+# 1. Install PHP dependencies
+composer install
+
+# 2. Copy environment file
+cp .env.example .env
+
+# 3. Generate application key
+php artisan key:generate
+```
+
+Configure your database credentials in the `.env` file:
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=candidate_test
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+```bash
+# 4. Run migrations and seeders
+php artisan migrate --seed
+
+# 5. Start the development server
+php artisan serve
+```
+
+## 3. Feature Requirements
 
 ### Core Features (Main Criteria)
 
@@ -16,7 +48,7 @@
 - [ ] CRUD CLT Layers (nested under Layup)
 
 The structure should properly reflect the hierarchy:
-Supplier → Layups → Layers
+**Supplier → Layups → Layers**
 
 ### Data Model (ERD)
 
@@ -34,7 +66,7 @@ Below is the Entity Relationship Diagram (ERD) representing the data structure:
 
 Format is flexible (JSON / CSV / Excel, etc.). JSON format is completely acceptable.
 
-## 3. Feature: Conflict Resolution (Bonus – Important)
+## 4. Feature: Conflict Resolution (Bonus – Important)
 
 During import, conflicts may occur when incoming data differs from existing records.
 
@@ -64,17 +96,10 @@ You must implement a clearly defined conflict resolution strategy.
 
 At minimum, support **one** of the following:
 
-- **Overwrite Existing**  
-  (Incoming data replaces current data)
-
-- **Skip Conflict**  
-  (Keep current data, ignore incoming change)
-
-- **Duplicate Layup**  
-  (Create a new layup with a suffix such as `name (imported)`)
-
-- **Reject Entire Import**  
-  (Abort and return a detailed conflict report)
+- **Overwrite Existing** — Incoming data replaces current data
+- **Skip Conflict** — Keep current data, ignore incoming change
+- **Duplicate Layup** — Create a new layup with a suffix such as `name (imported)`
+- **Reject Entire Import** — Abort and return a detailed conflict report
 
 ---
 
@@ -84,21 +109,17 @@ For additional bonus points, implement a **manual conflict resolution interface*
 
 Expected behavior:
 
-- Display **Existing Version (Current Data)** and  
-  **Incoming Version (Imported Data)** side-by-side
+- Display **Existing Version (Current Data)** and **Incoming Version (Imported Data)** side-by-side
 - Highlight field-level differences
 - Allow the user to choose:
     - ✅ Keep Existing
     - ✅ Accept Incoming
 - Support resolving conflicts one-by-one
-- Provide navigation (e.g., “1 of 3 discrepancies”)
+- Provide navigation (e.g., "1 of 3 discrepancies")
 
-This may be implemented as:
+This may be implemented as a modal or a dedicated conflict resolution page.
 
-- A modal, or
-- A dedicated conflict resolution page.
-
-## 4. Design Reference
+## 5. Design Reference
 
 A design reference is available in Figma:
 
@@ -106,7 +127,7 @@ A design reference is available in Figma:
 
 > The design is for reference only. Exact visual matching is not required.
 
-## 5. Evaluation Criteria
+## 6. Evaluation Criteria
 
 ### Main Evaluation
 
@@ -135,13 +156,12 @@ A design reference is available in Figma:
 
 - Any meaningful enhancements will be considered positively
 
-## 6. Submission
+## 7. Submission
 
-The deadline will be provided via email.  
+The deadline will be provided via email.
 Please ensure submission within the specified timeframe.
 
-
-## 7. Demo
+## 8. Demo
 
 Include one of the following with your submission:
 
