@@ -199,7 +199,10 @@ AnalysisPlotter.drawSvg = function (canvas, points, totalSpan, container) {
         return;
     }
 
-    var width = Math.max(canvas.clientWidth, 500);
+    var parentWidth = canvas.parentNode && canvas.parentNode.clientWidth
+        ? canvas.parentNode.clientWidth
+        : canvas.clientWidth;
+    var width = Math.max(parentWidth - 12, 700);
     var height = Math.max(canvas.clientHeight, 320);
     var pad = { left: 56, right: 20, top: 16, bottom: 36 };
     var plotW = width - pad.left - pad.right;
