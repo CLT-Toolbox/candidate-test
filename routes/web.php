@@ -30,6 +30,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/clt-layup', [CltLayupController::class, 'index'])->name('clt-layup.index');
     Route::post('/clt-layup', [CltLayupController::class, 'store'])->name('clt-layup.store');
+    Route::get('/clt-layup/template', [CltLayupController::class, 'downloadTemplate'])->name('clt-layup.template');
+    Route::post('/clt-layup/upload-import', [CltLayupController::class, 'uploadImport'])->name('clt-layup.upload-import');
+    Route::post('/clt-layup/process-import', [CltLayupController::class, 'processImport'])->name('clt-layup.process-import');
     Route::get('/clt-layup/{cltLayup}', [CltLayupController::class, 'edit'])->name('clt-layup.edit');
     Route::get('/clt-layup/{cltLayup}/show', [CltLayupController::class, 'show'])->name('clt-layup.show');
     Route::delete('/clt-layup/{cltLayup}', [CltLayupController::class, 'destroy'])->name('clt-layup.destroy');

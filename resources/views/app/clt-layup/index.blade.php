@@ -35,8 +35,16 @@
                     <div class="card">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h5 class="card-title mb-0">Associated Layups</h5>
-                            <button id="btnAddLayup" class="btn btn-primary"><i class="mdi mdi-plus me-1"></i> Add
-                                Layup</button>
+                            <div>
+                                <a href="{{ route('clt-layup.template') }}" class="btn btn-outline-secondary me-2">
+                                    <i class="mdi mdi-download me-1"></i> Download Template
+                                </a>
+                                <button id="btnImport" class="btn btn-success me-2">
+                                    <i class="mdi mdi-upload me-1"></i> Import
+                                </button>
+                                <button id="btnAddLayup" class="btn btn-primary"><i class="mdi mdi-plus me-1"></i> Add
+                                    Layup</button>
+                            </div>
                         </div>
 
                         <div class="card-body">
@@ -115,6 +123,149 @@
             </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->
     </div><!-- /.modal -->
+
+    {{-- Modal Import --}}
+    <div id="modalImport" class="modal fade" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Import Layups & Layers</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="dropzone" class="border border-2 border-dashed rounded p-5 text-center mb-3"
+                        style="cursor:pointer; border-style: dashed !important;">
+                        <i class="mdi mdi-cloud-upload-outline fs-1 text-muted"></i>
+                        <p class="mt-2 mb-1 fw-semibold">Click to upload or drag & drop</p>
+                        <small class="text-muted">Excel (.xlsx, .xls)</small>
+                        <input type="file" id="importFile" accept=".xlsx,.xls" class="d-none">
+                    </div>
+                    <div id="fileInfo" class="alert alert-info d-none">
+                        <i class="mdi mdi-file-excel me-2"></i>
+                        <span id="fileName"></span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" id="btnUploadImport" disabled>
+                        <i class="mdi mdi-upload me-1"></i> Upload & Check
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Modal Conflict Resolution --}}
+    <div id="modalConflict" class="modal fade" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div>
+                        <h5 class="modal-title">Conflict Resolution</h5>
+                        <small class="text-muted" id="conflictCounter"></small>
+                    </div>
+                    <div class="ms-auto d-flex align-items-center gap-2">
+                        <button class="btn btn-sm btn-outline-secondary" id="btnPrevConflict" disabled>
+                            <i class="mdi mdi-chevron-left"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" id="btnNextConflict">
+                            <i class="mdi mdi-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    {{-- Info layup & layer --}}
+                    <div class="mb-3 p-3 bg-light rounded">
+                        <span class="fw-semibold">Layup: </span>
+                        <span id="conflictLayupName"></span>
+                        <span class="ms-3 fw-semibold">Layer Order: </span>
+                        <span id="conflictLayerOrder"></span>
+                    </div>
+
+                    {{-- Side by side --}}
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="card border-secondary h-100">
+                                <div class="card-header bg-secondary text-white text-center py-2">
+                                    <i class="mdi mdi-database me-1"></i> Existing Data
+                                </div>
+                                <div class="card-body p-0">
+                                    <table class="table table-sm mb-0">
+                                        <tbody>
+                                            <tr id="existingThicknessRow">
+                                                <td class="ps-3 text-muted" width="45%">Thickness</td>
+                                                <td id="existingThickness" class="fw-semibold"></td>
+                                            </tr>
+                                            <tr id="existingWidthRow">
+                                                <td class="ps-3 text-muted">Width</td>
+                                                <td id="existingWidth" class="fw-semibold"></td>
+                                            </tr>
+                                            <tr id="existingAngleRow">
+                                                <td class="ps-3 text-muted">Angle</td>
+                                                <td id="existingAngle" class="fw-semibold"></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="card-footer text-center">
+                                    <button class="btn btn-outline-secondary btn-sm w-100" id="btnKeepExisting">
+                                        ✔ Keep Existing
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card border-primary h-100">
+                                <div class="card-header bg-primary text-white text-center py-2">
+                                    <i class="mdi mdi-upload me-1"></i> Incoming Data
+                                </div>
+                                <div class="card-body p-0">
+                                    <table class="table table-sm mb-0">
+                                        <tbody>
+                                            <tr id="incomingThicknessRow">
+                                                <td class="ps-3 text-muted" width="45%">Thickness</td>
+                                                <td id="incomingThickness" class="fw-semibold"></td>
+                                            </tr>
+                                            <tr id="incomingWidthRow">
+                                                <td class="ps-3 text-muted">Width</td>
+                                                <td id="incomingWidth" class="fw-semibold"></td>
+                                            </tr>
+                                            <tr id="incomingAngleRow">
+                                                <td class="ps-3 text-muted">Angle</td>
+                                                <td id="incomingAngle" class="fw-semibold"></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="card-footer text-center">
+                                    <button class="btn btn-primary btn-sm w-100" id="btnAcceptIncoming">
+                                        ✔ Accept Incoming
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Progress --}}
+                    <div class="mt-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <small class="text-muted">Progress</small>
+                            <small id="conflictProgress" class="text-muted"></small>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar bg-primary" id="conflictProgressBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success d-none" id="btnFinishImport">
+                        <i class="mdi mdi-check me-1"></i> Finish Import
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @section('script')
@@ -366,6 +517,237 @@
                     }
                 })
             })
+
+            const supplierId = {{ $supplier->id }};
+            let conflicts = [];
+            let cleanData = [];
+            let resolvedStatus = [];
+            let resolvedData = [];
+            let currentConflict = 0;
+
+            $('body').on('click', '#btnImport', function() {
+                $('#importFile').val('');
+                $('#fileInfo').addClass('d-none');
+                $('#btnUploadImport').prop('disabled', true);
+                $('#modalImport').modal('show');
+            });
+
+            $('#dropzone').on('click', function(e) {
+                if ($(e.target).is('#importFile')) return;
+                $('#importFile').trigger('click');
+            });
+
+
+            $('#dropzone').on('dragover', function(e) {
+                e.preventDefault();
+                $(this).addClass('border-primary');
+            });
+
+            $('#dropzone').on('dragleave', function() {
+                $(this).removeClass('border-primary');
+            });
+
+            $('#dropzone').on('drop', function(e) {
+                e.preventDefault();
+                $(this).removeClass('border-primary');
+                let file = e.originalEvent.dataTransfer.files[0];
+                if (file) handleFileSelect(file);
+            });
+
+            $('#importFile').on('change', function() {
+                if (this.files[0]) handleFileSelect(this.files[0]);
+            });
+
+            function handleFileSelect(file) {
+                $('#fileName').text(file.name);
+                $('#fileInfo').removeClass('d-none');
+                $('#btnUploadImport').prop('disabled', false);
+            }
+
+            $('#btnUploadImport').on('click', function() {
+                let file = $('#importFile')[0].files[0];
+                if (!file) return;
+
+                let formData = new FormData();
+                formData.append('file', file);
+                formData.append('supplier_id', supplierId);
+                formData.append('_token', $('meta[name="csrf-token"]').attr('content'));
+
+                $('#btnUploadImport').prop('disabled', true).html(
+                    '<i class="mdi mdi-loading mdi-spin me-1"></i> Checking...'
+                );
+
+                $.ajax({
+                    url: "{{ route('clt-layup.upload-import') }}",
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(res) {
+                        $('#btnUploadImport').prop('disabled', false).html(
+                            '<i class="mdi mdi-upload me-1"></i> Upload & Check'
+                        );
+                        $('#modalImport').modal('hide');
+
+                        conflicts = res.conflicts;
+                        cleanData = res.clean_data;
+                        resolvedConflicts = [];
+                        currentConflict = 0;
+
+                        if (conflicts.length === 0) {
+                            finishImport();
+                        } else {
+                            showConflictModal();
+                        }
+                    },
+                    error: function() {
+                        $('#btnUploadImport').prop('disabled', false).html(
+                            '<i class="mdi mdi-upload me-1"></i> Upload & Check'
+                        );
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Failed to read file.'
+                        });
+                    }
+                });
+            });
+
+            function showConflictModal() {
+                currentConflict = 0;
+                resolvedStatus = new Array(conflicts.length).fill(undefined);
+                resolvedData = new Array(conflicts.length).fill(null);
+                renderConflict(0);
+                $('#modalConflict').modal('show');
+            }
+
+            function renderConflict(index) {
+                let c = conflicts[index];
+                let total = conflicts.length;
+
+                $('#conflictCounter').text('Conflict ' + (index + 1) + ' of ' + total);
+                $('#conflictLayupName').text(c.layup_name);
+                $('#conflictLayerOrder').text(c.layer_order);
+
+                ['ThicknessRow', 'WidthRow', 'AngleRow'].forEach(function(suffix) {
+                    $('#existing' + suffix).removeClass('table-warning table-success');
+                    $('#incoming' + suffix).removeClass('table-warning table-success');
+                });
+
+                let fields = ['thickness', 'width', 'angle'];
+                fields.forEach(function(field) {
+                    let isDiff = parseFloat(c.existing[field]) !== parseFloat(c.incoming[field]);
+                    let cap = field.charAt(0).toUpperCase() + field.slice(1);
+
+                    $('#existing' + cap).text(c.existing[field]);
+                    $('#incoming' + cap).text(c.incoming[field]);
+
+                    if (isDiff) {
+                        $('#existing' + cap + 'Row').addClass('table-warning');
+                        $('#incoming' + cap + 'Row').addClass('table-warning');
+                    }
+                });
+
+                let status = resolvedStatus[index];
+                if (status === 'kept') {
+                    $('#btnKeepExisting').addClass('btn-secondary').removeClass('btn-outline-secondary');
+                    $('#btnAcceptIncoming').addClass('btn-outline-primary').removeClass('btn-primary');
+                } else if (status === 'accepted') {
+                    $('#btnAcceptIncoming').addClass('btn-primary').removeClass('btn-outline-primary');
+                    $('#btnKeepExisting').addClass('btn-outline-secondary').removeClass('btn-secondary');
+                } else {
+                    $('#btnKeepExisting').addClass('btn-outline-secondary').removeClass('btn-secondary');
+                    $('#btnAcceptIncoming').addClass('btn-outline-primary').removeClass('btn-primary');
+                }
+
+                let resolved = resolvedStatus.filter(r => r !== undefined).length;
+                let progress = total > 0 ? Math.round((resolved / total) * 100) : 0;
+                $('#conflictProgress').text(resolved + ' / ' + total + ' resolved');
+                $('#conflictProgressBar').css('width', progress + '%');
+
+                $('#btnPrevConflict').prop('disabled', index === 0);
+                $('#btnNextConflict').prop('disabled', index === total - 1);
+
+                let allResolved = resolvedStatus.filter(r => r !== undefined).length === total;
+                $('#btnFinishImport').toggleClass('d-none', !allResolved);
+            }
+
+            $('#btnKeepExisting').on('click', function() {
+                resolvedStatus[currentConflict] = 'kept';
+                moveToNext();
+            });
+
+            $('#btnAcceptIncoming').on('click', function() {
+                let c = conflicts[currentConflict];
+                resolvedStatus[currentConflict] = 'accepted';
+                resolvedData[currentConflict] = {
+                    layup_name: c.layup_name,
+                    layer_order: c.layer_order,
+                    thickness: c.incoming.thickness,
+                    width: c.incoming.width,
+                    angle: c.incoming.angle,
+                };
+                moveToNext();
+            });
+
+            function moveToNext() {
+                renderConflict(currentConflict);
+                if (currentConflict < conflicts.length - 1) {
+                    currentConflict++;
+                    renderConflict(currentConflict); 
+                }
+            }
+
+            $('#btnPrevConflict').on('click', function() {
+                if (currentConflict > 0) {
+                    currentConflict--;
+                    renderConflict(currentConflict);
+                }
+            });
+
+            $('#btnNextConflict').on('click', function() {
+                if (currentConflict < conflicts.length - 1) {
+                    currentConflict++;
+                    renderConflict(currentConflict);
+                }
+            });
+
+            $('#btnFinishImport').on('click', function() {
+                finishImport();
+            });
+
+            function finishImport() {
+                let accepted = resolvedData.filter((r, i) => resolvedStatus[i] === 'accepted' && r !== null);
+
+                $.ajax({
+                    url: "{{ route('clt-layup.process-import') }}",
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        _token: $('meta[name="csrf-token"]').attr('content'),
+                        supplier_id: supplierId,
+                        clean_data: cleanData,
+                        resolved_conflicts: accepted,
+                    }),
+                    success: function(res) {
+                        $('#modalConflict').modal('hide');
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Import Successful',
+                            text: res.message,
+                        }).then(function() {
+                            $('#datatable').DataTable().ajax.reload();
+                        });
+                    },
+                    error: function() {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Import failed, please try again.'
+                        });
+                    }
+                });
+            }
         });
     </script>
 @endsection
