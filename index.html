@@ -4,11 +4,76 @@
 		<meta charset="utf-8">
 		<title>3D Illustration Test</title>
 		<style>
-			body { margin: 0; }
+			:root {
+				color-scheme: dark;
+			}
+
+			* {
+				box-sizing: border-box;
+			}
+
+			body {
+				margin: 0;
+				min-height: 100vh;
+				display: grid;
+				place-items: center;
+				background: #000;
+				font-family: Arial, Helvetica, sans-serif;
+			}
+
+			#illustration-3d-container {
+				position: relative;
+				width: 793px;
+				height: 628px;
+				background: #000;
+				overflow: hidden;
+			}
+
+			#illustration-3d-container canvas {
+				display: block;
+			}
+
+			.dimension-layer,
+			.status-layer {
+				position: absolute;
+				inset: 0;
+				pointer-events: none;
+			}
+
+			.dimension-label {
+				position: absolute;
+				left: 0;
+				top: 0;
+				color: #fff;
+				font-size: 18px;
+				line-height: 1;
+				white-space: nowrap;
+				text-shadow:
+					-1px -1px 0 #000,
+					1px -1px 0 #000,
+					-1px 1px 0 #000,
+					1px 1px 0 #000,
+					0 0 6px rgba(0, 0, 0, 0.9);
+				transform-origin: center;
+			}
+
+			.status-layer {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				color: #fff;
+				font-size: 18px;
+				letter-spacing: 0.04em;
+				text-transform: uppercase;
+				text-shadow: 0 0 14px rgba(0, 0, 0, 0.9);
+			}
 		</style>
 	</head>
 	<body>
-        <div class="card p-3" id="illustration-3d-container"></div>
+        <div id="illustration-3d-container">
+            <div class="dimension-layer" id="dimension-layer"></div>
+            <div class="status-layer" id="status-layer">Loading illustration...</div>
+        </div>
 
         <!-- 3D Renderer -->
         <script type="importmap">
