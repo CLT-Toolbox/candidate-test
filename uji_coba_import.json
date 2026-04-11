@@ -1,0 +1,33 @@
+{
+    "name": "PT. CLT Indonesia",
+    "layups": [
+        {
+            "name": "Layup Utama",
+            "layers": [
+                {
+                    "layer_order": 1,
+                    "thickness": 99.99,
+                    "width": 100,
+                    "angle": 90
+                },
+                {
+                    "layer_order": 2,
+                    "thickness": 88.88,
+                    "width": 120,
+                    "angle": 45
+                }
+            ]
+        },
+        {
+            "name": "Layup Tambahan Baru",
+            "layers": [
+                {
+                    "layer_order": 1,
+                    "thickness": 50.0,
+                    "width": 300,
+                    "angle": 0
+                }
+            ]
+        }
+    ]
+}
