@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('clt_layups', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('supplier_id')->constrained('suppliers')->cascadeOnDelete();
+            $table->string('name');
             $table->timestamps();
         });
     }
