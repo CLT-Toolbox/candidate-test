@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>Laravel</title>
+        <title>CLT Toolbox | Feature-Test</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -46,18 +46,18 @@
                             </div>
                         </div>
                         @if (Route::has('login'))
-                            <div class="flex flex-col items-center gap-2 mt-6 animate-fade-in">
+                            <div class="flex flex-col items-center gap-4 mt-6 animate-fade-in">
                                 @guest
                                     <a
                                         href="{{ route('login') }}"
-                                        class=" text-xl rounded-md py-2 text-gray-200 ring-1 ring-transparent transition hover:text-white  focus:outline-none focus-visible:ring-[#FF2D20] dark:text-gray-200 dark:hover:text-white"
+                                        class="px-8 py-3 text-lg font-semibold text-white rounded-xl backdrop-blur-md bg-white/10 border border-white/20 transition duration-300 hover:bg-white/20 hover:border-white/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF2D20] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent shadow-lg hover:shadow-xl"
                                     >
                                         Log in
                                     </a>
                                     @if (Route::has('register'))
                                         <a
                                             href="{{ route('register') }}"
-                                            class="text-xl rounded-md py-2 text-gray-200 ring-1 ring-transparent transition hover:text-white  focus:outline-none focus-visible:ring-[#FF2D20] dark:text-gray-200 dark:hover:text-white"
+                                            class="px-8 py-3 text-lg font-semibold text-white rounded-xl backdrop-blur-md bg-white/10 border border-white/20 transition duration-300 hover:bg-white/20 hover:border-white/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF2D20] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent shadow-lg hover:shadow-xl"
                                         >
                                             Register
                                         </a>
