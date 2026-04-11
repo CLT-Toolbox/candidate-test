@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ImportSupplierRequest;
 use App\Models\Supplier;
 use App\Services\ImportExportService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -40,8 +41,101 @@ class ImportExportController extends Controller
         $filename = 'suppliers-' . now()->format('Ymd-His') . '.json';
 
         return response()->streamDownload(function () use ($data) {
-            echo json_encode($data, JSON_PRETTY_PRINT);
+            echo json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
         }, $filename, ['Content-Type' => 'application/json']);
+    }
+
+    public function exportListCsv(): StreamedResponse
+    {
+        $this->authorize('viewAny', Supplier::class);
+        $suppliers = Supplier::with('layups.layers')->get();
+
+        $filename = 'suppliers-' . now()->format('Ymd-His') . '.csv';
+
+        return response()->streamDownload(function () use ($suppliers) {
+            $handle = fopen('php://output', 'w');
+
+            fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            fputcsv($handle, [
+                'Supplier Name',
+                'Layup Name',
+                'Layer Order',
+                'Thickness',
+                'Width',
+                'Angle'
+            ]);
+
+            foreach ($suppliers as $supplier) {
+                $hasLayups = $supplier->layups->count() > 0;
+
+                if (!$hasLayups) {
+                    fputcsv($handle, [
+                        $supplier->name,
+                        '',
+                        '',
+                        '',
+                        '',
+                        ''
+                    ]);
+                } else {
+                    $isFirstSupplier = true;
+                    foreach ($supplier->layups as $layup) {
+                        $hasLayers = $layup->layers->count() > 0;
+
+                        if (!$hasLayers) {
+                            fputcsv($handle, [
+                                $isFirstSupplier ? $supplier->name : '',
+                                $layup->name,
+                                '',
+                                '',
+                                '',
+                                ''
+                            ]);
+                            $isFirstSupplier = false;
+                        } else {
+                            $isFirstLayer = true;
+                            foreach ($layup->layers as $layer) {
+                                fputcsv($handle, [
+                                    $isFirstSupplier ? $supplier->name : '',
+                                    $isFirstLayer ? $layup->name : '',
+                                    $layer->layer_order ?? '',
+                                    $layer->thickness ?? '',
+                                    $layer->width ?? '',
+                                    $layer->angle ?? ''
+                                ]);
+                                $isFirstSupplier = false;
+                                $isFirstLayer = false;
+                            }
+                        }
+                    }
+                }
+            }
+
+            fclose($handle);
+        }, $filename, [
+            'Content-Type' => 'text/csv; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"'
+        ]);
+    }
+
+    public function exportListPdf(): \Illuminate\Http\Response
+    {
+        $this->authorize('viewAny', Supplier::class);
+        $suppliers = Supplier::with('layups.layers')->get();
+
+        $html = view('export.suppliers-pdf', compact('suppliers'))->render();
+
+        $pdf = Pdf::loadHTML($html)
+            ->setPaper('a4', 'portrait')
+            ->setOption('isPhpEnabled', true)
+            ->setOption('defaultFont', 'Courier')
+            ->setOption('margin_left', 10)
+            ->setOption('margin_right', 10)
+            ->setOption('margin_top', 10)
+            ->setOption('margin_bottom', 10);
+
+        return $pdf->download('suppliers-' . now()->format('Ymd-His') . '.pdf');
     }
 
     public function export(Supplier $supplier): StreamedResponse
@@ -51,7 +145,7 @@ class ImportExportController extends Controller
         $filename = 'supplier-' . $supplier->id . '-' . now()->format('Ymd-His') . '.json';
 
         return response()->streamDownload(function () use ($data) {
-            echo json_encode($data, JSON_PRETTY_PRINT);
+            echo json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
         }, $filename, ['Content-Type' => 'application/json']);
     }
 

@@ -20,8 +20,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/suppliers', [SupplierController::class, 'index'])->name('suppliers.index');
     Route::post('/suppliers', [SupplierController::class, 'store'])->name('suppliers.store');
 
-    // Export / Import - MUST BE BEFORE {supplier} parameter routes!
+    // Export / Import
     Route::get('/suppliers/export-list', [ImportExportController::class, 'exportList'])->name('suppliers.export-list');
+    Route::get('/suppliers/export-list-csv', [ImportExportController::class, 'exportListCsv'])->name('suppliers.export-list-csv');
+    Route::get('/suppliers/export-list-pdf', [ImportExportController::class, 'exportListPdf'])->name('suppliers.export-list-pdf');
     Route::get('/suppliers/{supplier}/export', [ImportExportController::class, 'export'])->name('suppliers.export');
     Route::post('/suppliers/{supplier}/detect-conflicts', [ImportExportController::class, 'detectConflicts'])->name('suppliers.detect-conflicts');
     Route::post('/suppliers/{supplier}/import', [ImportExportController::class, 'import'])->name('suppliers.import');
