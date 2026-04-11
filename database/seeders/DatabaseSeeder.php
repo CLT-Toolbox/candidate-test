@@ -2,25 +2,47 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\User;
+use App\Models\Supplier;
+use App\Models\Layup;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
-
+        // ✅ USER LOGIN
         User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
+            'password' => bcrypt('password'),
         ]);
 
-        $this->call([
-        ]);
+        // ✅ SUPPLIERS + LAYUPS + LAYERS
+        Supplier::factory()
+            ->count(5)
+            ->create()
+            ->each(function ($supplier) {
+
+                $layups = Layup::factory()
+                    ->count(3)
+                    ->create([
+                        'supplier_id' => $supplier->id
+                    ]);
+
+                foreach ($layups as $layup) {
+
+                    $layerCount = rand(3, 5);
+
+                    for ($i = 1; $i <= $layerCount; $i++) {
+                        $layup->layers()->create([
+                            'layer_order' => $i,
+                            'thickness' => fake()->randomElement([20, 40]),
+                            'width' => 1200,
+                            'angle' => $i % 2 === 0 ? 90 : 0,
+                        ]);
+                    }
+                }
+            });
     }
 }
