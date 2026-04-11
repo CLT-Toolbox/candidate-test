@@ -37,10 +37,10 @@
                     class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-600">
             </div>
             <button class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm rounded-lg hover:bg-gray-50 transition">
-                🔽 Filter
+                Filter
             </button>
             <a href="#" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm rounded-lg hover:bg-gray-50 transition">
-                📤 Export
+                Export
             </a>
         </div>
 
