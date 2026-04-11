@@ -8,14 +8,24 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class SupplierRepository implements SupplierRepositoryInterface
 {
-    public function paginate(int $perPage = 10): LengthAwarePaginator
+    public function paginate(int $perPage = 10, string $sort = 'created'): LengthAwarePaginator
     {
-        return Supplier::withCount('layups')->latest()->paginate($perPage);
+        $query = Supplier::withCount('layups');
+
+        match($sort) {
+            'recent' => $query->latest('updated_at'),
+            'created' => $query->latest('created_at'),
+            'updated' => $query->latest('updated_at'),
+            'name' => $query->orderBy('name'),
+            default => $query->latest('created_at'),
+        };
+
+        return $query->paginate($perPage);
     }
 
     public function findById(int $id): ?Supplier
     {
-        return Supplier::with(['layups.layers'])->find($id);
+        return Supplier::find($id);
     }
 
     public function create(array $data): Supplier
@@ -26,7 +36,7 @@ class SupplierRepository implements SupplierRepositoryInterface
     public function update(Supplier $supplier, array $data): Supplier
     {
         $supplier->update($data);
-        return $supplier->fresh();
+        return $supplier;
     }
 
     public function delete(Supplier $supplier): bool

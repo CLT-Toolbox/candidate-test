@@ -12,9 +12,9 @@ class SupplierService
         private SupplierRepositoryInterface $supplierRepository
     ) {}
 
-    public function paginate(int $perPage = 10): LengthAwarePaginator
+    public function paginate(int $perPage = 10, string $sort = 'created'): LengthAwarePaginator
     {
-        return $this->supplierRepository->paginate($perPage);
+        return $this->supplierRepository->paginate($perPage, $sort);
     }
 
     public function findById(int $id): ?Supplier

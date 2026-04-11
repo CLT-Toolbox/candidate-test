@@ -16,17 +16,20 @@ Route::get('/dashboard', [SupplierController::class, 'index'])
     ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-    // Supplier CRUD
+    // Supplier CRUD - List & Create
     Route::get('/suppliers', [SupplierController::class, 'index'])->name('suppliers.index');
     Route::post('/suppliers', [SupplierController::class, 'store'])->name('suppliers.store');
-    Route::get('/suppliers/{supplier}', [SupplierController::class, 'show'])->name('suppliers.show');
-    Route::patch('/suppliers/{supplier}', [SupplierController::class, 'update'])->name('suppliers.update');
-    Route::delete('/suppliers/{supplier}', [SupplierController::class, 'destroy'])->name('suppliers.destroy');
 
-    // Export / Import
+    // Export / Import - MUST BE BEFORE {supplier} parameter routes!
+    Route::get('/suppliers/export-list', [ImportExportController::class, 'exportList'])->name('suppliers.export-list');
     Route::get('/suppliers/{supplier}/export', [ImportExportController::class, 'export'])->name('suppliers.export');
     Route::post('/suppliers/{supplier}/detect-conflicts', [ImportExportController::class, 'detectConflicts'])->name('suppliers.detect-conflicts');
     Route::post('/suppliers/{supplier}/import', [ImportExportController::class, 'import'])->name('suppliers.import');
+
+    // Supplier CRUD - Show, Edit, Delete
+    Route::get('/suppliers/{supplier}', [SupplierController::class, 'show'])->name('suppliers.show');
+    Route::patch('/suppliers/{supplier}', [SupplierController::class, 'update'])->name('suppliers.update');
+    Route::delete('/suppliers/{supplier}', [SupplierController::class, 'destroy'])->name('suppliers.destroy');
 
     // Layups (nested under Supplier)
     Route::post('/suppliers/{supplier}/layups', [CltLayupController::class, 'store'])->name('suppliers.layups.store');

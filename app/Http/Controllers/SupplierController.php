@@ -18,8 +18,15 @@ class SupplierController extends Controller
     public function index(): View
     {
         $this->authorize('viewAny', Supplier::class);
-        $suppliers = $this->supplierService->paginate(10);
-        return view('suppliers.index', compact('suppliers'));
+
+        $sort = request('sort', 'created');
+        $perPage = request('per_page', 10);
+
+        $perPage = in_array($perPage, [5, 10, 15, 20]) ? $perPage : 10;
+
+        $suppliers = $this->supplierService->paginate($perPage, $sort);
+
+        return view('suppliers.index', compact('suppliers', 'perPage'));
     }
 
     public function show(Supplier $supplier): View

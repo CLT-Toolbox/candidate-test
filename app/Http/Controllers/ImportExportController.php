@@ -15,6 +15,35 @@ class ImportExportController extends Controller
         private ImportExportService $importExportService
     ) {}
 
+    public function exportList(): StreamedResponse
+    {
+        $this->authorize('viewAny', Supplier::class);
+        $suppliers = Supplier::with('layups.layers')->get();
+
+        $data = [
+            'suppliers' => $suppliers->map(function ($supplier) {
+                return [
+                    'name' => $supplier->name,
+                    'layups' => $supplier->layups->map(fn($layup) => [
+                        'name' => $layup->name,
+                        'layers' => $layup->layers->map(fn($layer) => [
+                            'layer_order' => $layer->layer_order,
+                            'thickness' => $layer->thickness,
+                            'width' => $layer->width,
+                            'angle' => $layer->angle,
+                        ])->toArray(),
+                    ])->toArray(),
+                ];
+            })->toArray(),
+        ];
+
+        $filename = 'suppliers-' . now()->format('Ymd-His') . '.json';
+
+        return response()->streamDownload(function () use ($data) {
+            echo json_encode($data, JSON_PRETTY_PRINT);
+        }, $filename, ['Content-Type' => 'application/json']);
+    }
+
     public function export(Supplier $supplier): StreamedResponse
     {
         $this->authorize('view', $supplier);
