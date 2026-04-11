@@ -27,6 +27,9 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/suppliers/export', [SupplierController::class, 'export'])
     ->name('suppliers.export');
 
+Route::get('/suppliers/{supplier}', [SupplierController::class, 'show'])
+    ->name('suppliers.show');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

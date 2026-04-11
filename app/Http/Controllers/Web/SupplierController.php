@@ -40,4 +40,12 @@ class SupplierController extends Controller
             'suppliers.xlsx'
         );
     }
+
+
+    public function show(Supplier $supplier)
+    {
+        $supplier->load('layups.layers');
+
+        return view('suppliers.show', compact('supplier'));
+    }
 }
