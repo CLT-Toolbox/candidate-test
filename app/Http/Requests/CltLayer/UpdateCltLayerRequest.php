@@ -26,6 +26,7 @@ class UpdateCltLayerRequest extends FormRequest
             'thickness'   => ['required', 'numeric', 'min:0'],
             'width'       => ['required', 'numeric', 'min:0'],
             'angle'       => ['required', 'numeric'],
+            'species_grade' => ['nullable', 'string', 'max:255'],
         ];
     }
 }

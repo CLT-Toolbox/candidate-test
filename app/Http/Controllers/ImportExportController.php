@@ -167,25 +167,55 @@ class ImportExportController extends Controller
         ]);
     }
 
-    public function import(ImportSupplierRequest $request, Supplier $supplier): RedirectResponse
+    public function import(ImportSupplierRequest $request, Supplier $supplier): \Illuminate\Http\JsonResponse
     {
         $this->authorize('update', $supplier);
+
         $content = $request->file('file')->get();
         $importData = json_decode($content, true);
 
         if (!$importData) {
-            return back()->with('error', 'Invalid JSON file.');
+            return response()->json([
+                'success' => false,
+                'error' => 'Invalid JSON file.'
+            ], 422);
         }
 
         $strategy = $request->input('strategy');
-        $resolutions = $request->input('resolutions', []);
+        $resolutionsInput = $request->input('resolutions', '{}');
+        $resolutions = is_string($resolutionsInput)
+            ? json_decode($resolutionsInput, true) ?? []
+            : $resolutionsInput;
+
+        $dry_run = $request->input('dry_run') === '1';
 
         try {
-            $results = $this->importExportService->import($supplier, $importData, $strategy, $resolutions);
-            return redirect()->route('suppliers.show', $supplier)
-                ->with('success', "Import complete. Created: {$results['created']}, Updated: {$results['updated']}, Skipped: {$results['skipped']}.");
+            $results = $this->importExportService->import(
+                $supplier,
+                $importData,
+                $strategy,
+                $resolutions,
+                $dry_run
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => "Import complete. Created: {$results['created']}, Updated: {$results['updated']}, Skipped: {$results['skipped']}.",
+                'results' => $results,
+            ]);
         } catch (\Exception $e) {
-            return back()->with('error', $e->getMessage());
+            if ($e->getMessage() === 'DRY_RUN_COMPLETED') {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Dry run completed - no changes saved to database.',
+                    'dry_run' => true,
+                ]);
+            }
+
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ], 422);
         }
     }
 }

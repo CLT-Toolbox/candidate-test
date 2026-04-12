@@ -23,6 +23,10 @@ class StoreCltLayupRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            'layup_code' => ['required', 'string', 'max:255', 'unique:clt_layups,layup_code'],
+            'revision' => ['nullable', 'string', 'max:255'],
+            'status' => ['required', 'in:active,draft,archived'],
+            'species_grade' => ['nullable', 'string', 'max:255'],
         ];
     }
 }

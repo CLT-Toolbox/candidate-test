@@ -98,75 +98,106 @@ class ImportExportService
         return $conflicts;
     }
 
-    public function import(Supplier $supplier, array $importData, string $strategy, array $resolutions = []): array
-    {
-        return DB::transaction(function () use ($supplier, $importData, $strategy, $resolutions) {
-            $results = ['created' => 0, 'updated' => 0, 'skipped' => 0, 'duplicated' => 0];
+    public function import(Supplier $supplier, array $importData, string $strategy, array $resolutions = [], bool $isDryRun = false): array
+{
+    \Log::info('=== IMPORT START ===', [
+        'supplier_id' => $supplier->id,
+        'strategy' => $strategy,
+        'resolutions_count' => count($resolutions),
+        'resolutions_keys' => array_keys($resolutions),
+        'isDryRun' => $isDryRun,
+    ]);
 
-            foreach ($importData['layups'] as $layupData) {
-                $existingLayup = $this->layupRepository->findByNameAndSupplier(
-                    $layupData['name'],
-                    $supplier->id
-                );
+    return DB::transaction(function () use ($supplier, $importData, $strategy, $resolutions, $isDryRun) {
+        $results = ['created' => 0, 'updated' => 0, 'skipped' => 0, 'duplicated' => 0];
 
-                if ($strategy === 'duplicate') {
-                    $layup = $this->layupRepository->create([
-                        'supplier_id' => $supplier->id,
-                        'name'        => $layupData['name'] . ' (imported)',
-                    ]);
-                    $results['duplicated']++;
-                } elseif (!$existingLayup) {
-                    $layup = $this->layupRepository->create([
-                        'supplier_id' => $supplier->id,
-                        'name'        => $layupData['name'],
-                    ]);
-                    $results['created']++;
-                } else {
-                    $layup = $existingLayup;
-                }
+        foreach ($importData['layups'] as $layupData) {
+            $existingLayup = $this->layupRepository->findByNameAndSupplier(
+                $layupData['name'],
+                $supplier->id
+            );
 
-                foreach ($layupData['layers'] as $layerData) {
-                    $existingLayer = $this->layerRepository->findByOrderAndLayup(
-                        $layerData['layer_order'],
-                        $layup->id
-                    );
+            \Log::info('Processing layup', [
+                'layup_name' => $layupData['name'],
+                'exists' => !!$existingLayup,
+                'layer_count' => count($layupData['layers'] ?? []),
+            ]);
 
-                    $hasConflict = $existingLayer && (
-                        (float) $existingLayer->thickness !== (float) $layerData['thickness'] ||
-                        (float) $existingLayer->width !== (float) $layerData['width'] ||
-                        (float) $existingLayer->angle !== (float) $layerData['angle']
-                    );
-
-                    if (!$hasConflict) {
-                        if (!$existingLayer) {
-                            $this->layerRepository->create(array_merge($layerData, ['layup_id' => $layup->id]));
-                            $results['created']++;
-                        }
-                        continue;
-                    }
-
-                    // Handle conflict based on strategy
-                    if ($strategy === 'manual') {
-                        $key = $layupData['name'] . '_' . $layerData['layer_order'];
-                        $resolution = $resolutions[$key] ?? 'skip';
-                        if ($resolution === 'accept') {
-                            $this->layerRepository->update($existingLayer, $layerData);
-                            $results['updated']++;
-                        } else {
-                            $results['skipped']++;
-                        }
-                    } elseif ($strategy === 'overwrite') {
-                        $this->layerRepository->update($existingLayer, $layerData);
-                        $results['updated']++;
-                    } elseif ($strategy === 'skip') {
-                        $results['skipped']++;
-                    } elseif ($strategy === 'reject') {
-                        throw new \Exception('Import rejected due to conflicts.');
-                    }
-                }
+            if ($strategy === 'duplicate') {
+                $layup = $this->layupRepository->create([
+                    'supplier_id' => $supplier->id,
+                    'name'        => $layupData['name'] . ' (imported)',
+                ]);
+                $results['duplicated']++;
+            } elseif (!$existingLayup) {
+                $layup = $this->layupRepository->create([
+                    'supplier_id' => $supplier->id,
+                    'name'        => $layupData['name'],
+                ]);
+                $results['created']++;
+            } else {
+                $layup = $existingLayup;
             }
 
-            return $results;
-        });
-    }
+            foreach ($layupData['layers'] as $layerData) {
+                $existingLayer = $this->layerRepository->findByOrderAndLayup(
+                    $layerData['layer_order'],
+                    $layup->id
+                );
+
+                $hasConflict = $existingLayer && (
+                    (float) $existingLayer->thickness !== (float) $layerData['thickness'] ||
+                    (float) $existingLayer->width !== (float) $layerData['width'] ||
+                    (float) $existingLayer->angle !== (float) $layerData['angle']
+                );
+
+                if (!$hasConflict) {
+                    if (!$existingLayer) {
+                        $this->layerRepository->create(array_merge($layerData, ['layup_id' => $layup->id]));
+                        $results['created']++;
+                    }
+                    continue;
+                }
+
+                if ($strategy === 'manual') {
+                    $key = $layupData['name'] . '_' . $layerData['layer_order'];
+                    $resolution = $resolutions[$key] ?? 'skip';
+
+                    \Log::info('Manual resolution check', [
+                        'key' => $key,
+                        'resolution' => $resolution,
+                        'available_keys' => array_keys($resolutions),
+                    ]);
+
+                    if ($resolution === 'accept') {
+                        \Log::info('Updating layer', [
+                            'layer_id' => $existingLayer->id,
+                            'data' => $layerData,
+                        ]);
+                        $this->layerRepository->update($existingLayer, $layerData);
+                        $results['updated']++;
+                    } else {
+                        $results['skipped']++;
+                    }
+                } elseif ($strategy === 'overwrite') {
+                    $this->layerRepository->update($existingLayer, $layerData);
+                    $results['updated']++;
+                } elseif ($strategy === 'skip') {
+                    $results['skipped']++;
+                } elseif ($strategy === 'reject') {
+                    throw new \Exception('Import rejected due to conflicts.');
+                }
+            }
+        }
+
+        // ✅ DRY RUN: Jika isDryRun true, throw exception untuk rollback
+        if ($isDryRun) {
+            \Log::info('DRY RUN - Rolling back all changes');
+            throw new \Exception('DRY_RUN_COMPLETED');
+        }
+
+        \Log::info('=== IMPORT COMPLETE ===', $results);
+        return $results;
+    });
+}
 }

@@ -10,7 +10,14 @@ class CltLayer extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['layup_id', 'layer_order', 'thickness', 'width', 'angle'];
+    protected $fillable = [
+        'layup_id',
+        'layer_order',
+        'thickness',
+        'width',
+        'angle',
+        'species_grade',
+    ];
 
     protected $casts = [
         'thickness' => 'decimal:2',

@@ -23,6 +23,10 @@ class StoreSupplierRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255', 'unique:suppliers,name'],
+            'primary_contact' => ['nullable', 'string', 'max:255'],
+            'location' => ['nullable', 'string', 'max:255'],
+            'material_certifications' => ['nullable', 'string', 'max:255'],
+            'last_audit_date' => ['nullable', 'date'],
         ];
     }
 }

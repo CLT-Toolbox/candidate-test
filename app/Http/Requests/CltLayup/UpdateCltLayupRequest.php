@@ -23,6 +23,10 @@ class UpdateCltLayupRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            'layup_code' => ['required', 'string', 'unique:clt_layups,layup_code,' . $this->layup->id],
+            'revision' => ['nullable', 'string', 'max:255'],
+            'status' => ['required', 'in:active,draft,archived'],
+            'species_grade' => ['nullable', 'string', 'max:255'],
         ];
     }
 }

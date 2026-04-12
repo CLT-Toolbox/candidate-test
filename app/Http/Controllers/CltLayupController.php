@@ -26,8 +26,9 @@ class CltLayupController extends Controller
     public function store(StoreCltLayupRequest $request, Supplier $supplier): RedirectResponse
     {
         $this->authorize('create', CltLayup::class);
-        $this->layupService->create(array_merge($request->validated(), ['supplier_id' => $supplier->id]));
-        return redirect()->route('suppliers.show', $supplier)
+        $layup = $this->layupService->create(array_merge($request->validated(), ['supplier_id' => $supplier->id]));
+
+        return redirect()->route('suppliers.layups.show', [$supplier, $layup])
             ->with('success', 'Layup created successfully.');
     }
 
@@ -35,7 +36,8 @@ class CltLayupController extends Controller
     {
         $this->authorize('update', $layup);
         $this->layupService->update($layup, $request->validated());
-        return redirect()->route('suppliers.show', $supplier)
+
+        return redirect()->route('suppliers.layups.show', [$supplier, $layup])
             ->with('success', 'Layup updated successfully.');
     }
 

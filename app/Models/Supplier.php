@@ -10,7 +10,17 @@ class Supplier extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name'];
+    protected $fillable = [
+        'name',
+        'primary_contact',
+        'location',
+        'material_certifications',
+        'last_audit_date',
+    ];
+
+    protected $casts = [
+        'last_audit_date' => 'date',
+    ];
 
     public function layups(): HasMany
     {
