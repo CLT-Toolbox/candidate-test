@@ -133,7 +133,6 @@
                         @endphp
 
                         @if(!$hasLayers)
-                            {{-- Layup tanpa layers --}}
                             <tr>
                                 <td class="supplier-name">
                                     {{ $isFirstSupplier ? $supplier->name : '' }}
@@ -143,7 +142,6 @@
                             </tr>
                             @php $isFirstSupplier = false; @endphp
                         @else
-                            {{-- Layup dengan layers --}}
                             @foreach($layup->layers as $layer)
                                 <tr>
                                     <td class="supplier-name">

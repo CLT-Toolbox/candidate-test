@@ -16,23 +16,30 @@
                     </svg>
                     Duplicate
                 </button>
-                <button type="button"
+                <a href="{{ route('suppliers.show', $supplier) }}"
                     class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-[#2d5a3d] hover:bg-[#244a32] transition">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 16 16">
-                        <path d="M2 3a1 1 0 011-1h8l3 3v8a1 1 0 01-1 1H3a1 1 0 01-1-1V3z" stroke="white" stroke-width="1.2"/>
-                        <rect x="5" y="9" width="6" height="5" rx="0.5" stroke="white" stroke-width="1.2"/>
-                        <rect x="5" y="2" width="5" height="3" rx="0.5" stroke="white" stroke-width="1.2"/>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                     </svg>
-                    Save Changes
-                </button>
+                    Back to Supplier
+                </a>
             </div>
         </div>
     </x-slot>
 
     <div class="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         @if(session('success'))
-            <div class="mb-4 p-4 bg-green-100 text-green-800 rounded-lg">{{ session('success') }}</div>
-        @endif
+        <div
+            x-data="{ show: true }"
+            x-init="setTimeout(() => show = false, 1500)"
+            x-show="show"
+            x-transition:leave="transition ease-in duration-300"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            class="mb-4 p-4 bg-green-100 text-green-800 rounded-lg">
+            {{ session('success') }}
+        </div>
+    @endif
 
         <div class="bg-white rounded-xl border border-gray-200 px-8 py-6 mb-6">
             <div class="mb-5">

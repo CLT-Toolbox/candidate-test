@@ -8,7 +8,7 @@
             <button
                 x-data
                 @click="$dispatch('open-modal', 'create-supplier')"
-                class="inline-flex items-center px-4 py-2 bg-green-700 text-white text-sm font-medium rounded-lg hover:bg-green-800 transition">
+                class="inline-flex items-center px-4 py-2 bg-[#2d5a3d] text-white text-sm font-medium rounded-lg hover:bg-green-800 transition">
                 + Add Supplier
             </button>
         </div>
@@ -17,10 +17,16 @@
     <div class="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         @if(session('success'))
-            <div class="mb-4 p-4 bg-green-100 text-green-800 rounded-lg">{{ session('success') }}</div>
-        @endif
-        @if(session('error'))
-            <div class="mb-4 p-4 bg-red-100 text-red-800 rounded-lg">{{ session('error') }}</div>
+            <div
+                x-data="{ show: true }"
+                x-init="setTimeout(() => show = false, 1500)"
+                x-show="show"
+                x-transition:leave="transition ease-in duration-300"
+                x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0"
+                class="mb-4 p-4 bg-green-100 text-green-800 rounded-lg">
+                {{ session('success') }}
+            </div>
         @endif
 
         <!-- Filter & Actions -->
@@ -44,7 +50,6 @@
                         style="width:320px; max-width:320px; height:40px; opacity:1; transform:rotate(0deg);"
                         class="px-4 pr-10 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-600"
                     >
-                    <!-- Clear Button -->
                     <button
                         x-show="searchQuery.length > 0"
                         @click="
@@ -228,7 +233,6 @@
                         </td>
                     </tr>
 
-                    <!-- Edit Modal -->
                     <x-modal name="edit-supplier-{{ $supplier->id }}">
                         <form method="POST" action="{{ route('suppliers.update', $supplier) }}" class="p-6">
                             @csrf @method('PATCH')
