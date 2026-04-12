@@ -40,6 +40,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/suppliers/{supplier}/layups/{layup}', [CltLayupController::class, 'destroy'])->name('suppliers.layups.destroy');
 
     // Layers (nested under Layup)
+    Route::get('/suppliers/{supplier}/layups/{layup}/layers', [CltLayerController::class, 'index'])->name('suppliers.layups.layers.index');
     Route::post('/suppliers/{supplier}/layups/{layup}/layers', [CltLayerController::class, 'store'])->name('suppliers.layups.layers.store');
     Route::patch('/suppliers/{supplier}/layups/{layup}/layers/{layer}', [CltLayerController::class, 'update'])->name('suppliers.layups.layers.update');
     Route::delete('/suppliers/{supplier}/layups/{layup}/layers/{layer}', [CltLayerController::class, 'destroy'])->name('suppliers.layups.layers.destroy');

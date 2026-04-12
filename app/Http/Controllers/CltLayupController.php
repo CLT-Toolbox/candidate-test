@@ -17,10 +17,15 @@ class CltLayupController extends Controller
     ) {}
 
     public function show(Supplier $supplier, CltLayup $layup): View
-    {
+        {
         $this->authorize('view', $layup);
-        $layup->load('layers');
-        return view('layups.show', compact('supplier', 'layup'));
+        $layers = $layup->layers()->orderBy('layer_order')->get();
+
+        return view('layups.index', [
+            'supplier' => $supplier,
+            'layup' => $layup,
+            'layers' => $layers,
+        ]);
     }
 
     public function store(StoreCltLayupRequest $request, Supplier $supplier): RedirectResponse

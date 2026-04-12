@@ -9,12 +9,26 @@ use App\Models\CltLayup;
 use App\Models\Supplier;
 use App\Services\CltLayerService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class CltLayerController extends Controller
 {
     public function __construct(
         private CltLayerService $layerService
     ) {}
+
+    public function index(Supplier $supplier, CltLayup $layup): View
+    {
+        $this->authorize('view', $layup);
+
+        $layers = $layup->layers()->orderBy('layer_order')->get();
+
+        return view('layers.index', [
+            'supplier' => $supplier,
+            'layup' => $layup,
+            'layers' => $layers,
+        ]);
+    }
 
     public function store(StoreCltLayerRequest $request, Supplier $supplier, CltLayup $layup): RedirectResponse
     {
