@@ -1,17 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<title>3D Illustration Test</title>
-		<style>
-			body { margin: 0; }
-		</style>
-	</head>
-	<body>
-        <div class="card p-3" id="illustration-3d-container"></div>
 
-        <!-- 3D Renderer -->
-        <script type="importmap">
+<head>
+    <meta charset="utf-8">
+    <title>3D Illustration Test</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+            font-family: sans-serif;
+        }
+
+        .label {
+            color: #fff;
+            padding: 2px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 4px;
+            font-size: 14px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="illustration-3d-container"></div>
+
+    <!-- 3D Renderer -->
+    <script type="importmap">
             {
                 "imports": {
                     "three": "https://unpkg.com/three@0.161.0/build/three.module.js",
@@ -21,6 +37,7 @@
                 }
             }
         </script>
-        <script type="module" src="js/illustration/illustration-three.js"></script>
-    </body>
+    <script type="module" src="js/illustration/illustration-three.js"></script>
+</body>
+
 </html>
