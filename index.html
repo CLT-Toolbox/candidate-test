@@ -1,102 +1,213 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Beam Analysis Plot</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
-<body>
-    <form>
-        <table>
-            <tr>
-                <td>Condition</td>
-                <td>
-                    <select name="condition" id="condition">
-                        <option value="simply-supported">Simply Supported</option>
-                        <option value="two-span-unequal">Two Span Unequal</option>
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <td>Load Force (w)</td>
-                <td><input type="text" id="w"> kN/m</td>
-            </tr>
-            <tr>
-                <td>Primary Span (L1)</td>
-                <td><input type="text" id="primarySpan" value="4"> m</td>
-            </tr>
-            <tr>
-                <td>Secondary Span (L2)</td>
-                <td><input type="text" id="secondarySpan" value=""> m</td>
-            </tr>
-            <tr>
-                <td colspan="2"><hr></td>
-            </tr>
-            <tr>
-                <td>j2</td>
-                <td><input type="text" id="j2" value="2"></td>
-            </tr>
-            <tr>
-                <td>Bending Stiffnes (EI)</td>
-                <td><input type="text" id="EI" value="3150000000000"> Nmm<sup>2</sup></td>
-            </tr>
 
-            <tr>
-                <td colspan="2"><hr></td>
-            </tr>
+<body class="py-4">
+    <div class="container-fluid">
+        <div class="row g-4">
+            <!-- Sidebar: Inputs -->
+            <div class="col-lg-3">
+                <div class="card sticky-lg-top" style="top: 20px;">
+                    <div class="card-header">Parameter Input</div>
+                    <div class="card-body">
+                        <form id="beamForm">
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Analysis Condition</label>
+                                <select class="form-select form-select-sm" id="condition">
+                                    <option value="simply-supported">Simply Supported</option>
+                                    <option value="two-span-unequal">Two Span Unequal</option>
+                                </select>
+                            </div>
 
-            <tr>
-                <td colspan="2" style="text-align: center;">
-                    <button type="button" id="calculate">Calculate</button>
-                </td>
-            </tr>
-        </table>
-    </form>
-    <canvas id="deflection_plot"></canvas>
-    <canvas id="shear_force_plot"></canvas>
-    <canvas id="bending_moment_plot"></canvas>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Load Force (w)</label>
+                                <div class="input-group input-group-sm">
+                                    <input type="number" class="form-control" id="w" value="20">
+                                    <span class="input-group-text">kN/m</span>
+                                </div>
+                            </div>
 
+                            <div class="row g-2 mb-3">
+                                <div class="col-6">
+                                    <label class="form-label small fw-bold">Primary (L1)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" class="form-control" id="primarySpan" value="4">
+                                        <span class="input-group-text">m</span>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small fw-bold">Secondary (L2)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" class="form-control" id="secondarySpan" value="5">
+                                        <span class="input-group-text">m</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">j2 Factor</label>
+                                <input type="number" class="form-control form-control-sm" id="j2" value="2">
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label small fw-bold">Bending Stiffness (EI)</label>
+                                <div class="input-group input-group-sm">
+                                    <input type="text" class="form-control" id="EI" value="3150000000000">
+                                    <span class="input-group-text">Nmm²</span>
+                                </div>
+                            </div>
+
+                            <button type="button" id="calculate"
+                                class="btn btn-primary btn-calculate w-100 shadow-sm mb-2">Calculate All</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content: Charts -->
+            <div class="col-lg-9">
+                <div class="row">
+                    <!-- Bending Moment -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body p-2">
+                                <div class="chart-container">
+                                    <canvas id="bending_moment_plot"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Shear Force -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body p-2">
+                                <div class="chart-container">
+                                    <canvas id="shear_force_plot"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Deflection Section -->
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span>Deflection Analysis</span>
+                                <div style="width: 250px;">
+                                    <select id="deflectionLoadType" class="form-select form-select-sm">
+                                        <option value="1">LC1 - Shortterm (j2=1.0)</option>
+                                        <option value="1.5">LC2 - Shortterm (j2=1.5)</option>
+                                        <option value="2">LC3 - Longterm (j2=2.0)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="card-body p-2">
+                                <div class="chart-container" id="deflection_plot_container">
+                                    <canvas id="deflection_plot"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/utils/ui-utils.js"></script>
+    <script src="js/utils/structural-physics.js"></script>
     <script src="js/beam-analysis.js"></script>
     <script src="js/analysis-plotter.js"></script>
 
     <script>
-        /**
-         * Get float value of specified field
-         */
-        function floatVal(id) {
-            return parseFloat(
-                document.getElementById(id).value
-            );
-        }
+        (function () {
+            'use strict';
 
-        function stringVal(id) {
-            return document.getElementById(id).value;
-        }
-
-        document.getElementById('calculate').addEventListener('click', function(e) {
-            var beam = new Beam();
-
-            beam.primarySpan    = floatVal('primarySpan');
-            beam.secondarySpan  = floatVal('secondarySpan');
-            beam.material       = new Material('No Name', {
-                EI : floatVal('EI')
-            });
-
+            // Inisialisasi plotter
             var plotter = {
-                deflection      : new AnalysisPlotter('deflection_plot'),
-                shearForce      : new AnalysisPlotter('shear_force_plot'),
-                bendingMoment   : new AnalysisPlotter('bending_moment_plot')
+                bendingMoment: new AnalysisPlotter('bending_moment_plot'),
+                shearForce: new AnalysisPlotter('shear_force_plot'),
+                deflection: new AnalysisPlotter('deflection_plot')
+            };
+            var beamAnalysis = new BeamAnalysis();
+            var hasCalculated = false;
+
+            // Helper ambil angka dari input
+            function floatVal(id) {
+                const val = parseFloat(document.getElementById(id).value);
+                return isNaN(val) ? 0 : val;
             }
 
-            var beamAnalysis        = new BeamAnalysis();
-            var deflectionData      = beamAnalysis.getDeflection(beam, floatVal('w'), stringVal('condition'));
-            var bendingMomentData   = beamAnalysis.getBendingMoment(beam, floatVal('w'), stringVal('condition'));
-            var shearForceData      = beamAnalysis.getShearForce(beam, floatVal('w'), stringVal('condition'));
+            function stringVal(id) {
+                return document.getElementById(id).value;
+            }
 
-            plotter.deflection.plot(deflectionData);
-            plotter.shearForce.plot(shearForceData);
-            plotter.bendingMoment.plot(bendingMomentData);
-        });
+            // Kumpulin semua data dari form
+            function getAppState() {
+                const condition = stringVal('condition');
+                const load = floatVal('w');
+                const deflectionFactor = floatVal('deflectionLoadType') || 1;
+
+                const beam = new Beam();
+                beam.primarySpan = floatVal('primarySpan');
+                beam.secondarySpan = condition === 'two-span-unequal' ? floatVal('secondarySpan') : 0;
+                const material = new Material('No Name', { EI: floatVal('EI') });
+
+                // Debug
+                console.log('--- Debug ---');
+                console.log('Load:', load);
+                console.log('Factor:', deflectionFactor);
+                console.log('Total:', load * deflectionFactor);
+
+                return {
+                    condition: condition,
+                    rawLoad: load,
+                    deflectionLoad: load * deflectionFactor,
+                    beam: (function () {
+                        const b = new Beam();
+                        b.primarySpan = floatVal('primarySpan');
+                        b.secondarySpan = condition === 'two-span-unequal' ? floatVal('secondarySpan') : 0;
+                        b.material = material;
+                        return b;
+                    })()
+                };
+            }
+
+            // Fungsi utama render semua grafik
+            function renderAll() {
+                const state = getAppState();
+
+                plotter.bendingMoment.plot(beamAnalysis.getBendingMoment(state.beam, state.rawLoad, state.condition));
+                plotter.shearForce.plot(beamAnalysis.getShearForce(state.beam, state.rawLoad, state.condition));
+                plotter.deflection.plot(beamAnalysis.getDeflection(state.beam, state.deflectionLoad, state.condition));
+
+                hasCalculated = true;
+            }
+
+            // Update grafik defleksi kalau load type diganti
+            function renderDeflectionOnly() {
+                if (!hasCalculated) return;
+                const state = getAppState();
+                plotter.deflection.plot(beamAnalysis.getDeflection(state.beam, state.deflectionLoad, state.condition));
+            }
+
+            // Event binding
+            document.getElementById('calculate').addEventListener('click', renderAll);
+            document.getElementById('deflectionLoadType').addEventListener('change', renderDeflectionOnly);
+        })();
     </script>
 </body>
+
 </html>
