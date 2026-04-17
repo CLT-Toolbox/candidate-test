@@ -14,17 +14,45 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans text-gray-900 antialiased">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100 dark:bg-gray-900">
-            <div>
-                <a href="/">
-                    <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
-                </a>
-            </div>
+    <body class="font-sans text-white antialiased" style="background: linear-gradient(135deg, #111827 0%, #1a2d3d 25%, #1a1f3a 50%, #1a2d3d 75%, #111827 100%); background-attachment: fixed; min-height: 100vh;">
+        <!-- Decorative blobs -->
+        <div class="fixed top-0 left-0 w-96 h-96 bg-blue-900 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse"></div>
+        <div class="fixed top-0 right-0 w-96 h-96 bg-purple-900 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse" style="animation-delay: 2s;"></div>
+        <div class="fixed bottom-0 left-1/2 w-96 h-96 bg-indigo-900 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse" style="animation-delay: 4s;"></div>
 
-            <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white dark:bg-gray-800 shadow-md overflow-hidden sm:rounded-lg">
-                {{ $slot }}
+        <div class="min-h-screen flex flex-col justify-center items-center relative z-10">
+            <div class="flex flex-col items-center">
+                <!-- Logo -->
+                <div class="mb-8">
+                    <a href="/" class="inline-block">
+                        <div class="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow">
+                            <x-application-logo class="w-12 h-12 fill-current text-white" />
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Card -->
+                <div class="w-full sm:max-w-md px-8 py-8 bg-gray-800 rounded-2xl shadow-2xl backdrop-blur-xl relative border border-gray-700">
+                    
+                    {{ $slot }}
+                </div>
+
+                <!-- Footer text -->
+                <p class="mt-6 text-center text-gray-400 text-sm">
+                    CLT Toolbox • Feature Assignment
+                </p>
             </div>
         </div>
+
+        <style>
+            @keyframes float {
+                0%, 100% { transform: translateY(0px); }
+                50% { transform: translateY(-20px); }
+            }
+            
+            .animate-float {
+                animation: float 3s ease-in-out infinite;
+            }
+        </style>
     </body>
 </html>
