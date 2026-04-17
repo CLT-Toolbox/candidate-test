@@ -1,174 +1,132 @@
-'use strict';
+(function (global) {
+    'use strict';
 
-/** ============================ Beam Analysis Data Type ============================ */
-
-/**
- * Beam material specification.
- *
- * @param {String} name         Material name
- * @param {Object} properties   Material properties {EI : 0, GA : 0, ....}
- */
-class Material {
-    constructor(name, properties) {
-        this.name = name;
-        this.properties = properties;
+    // Model data Balok & Material
+    class Beam {
+        constructor() {
+            this.primarySpan = 0;
+            this.secondarySpan = 0;
+            this.material = null;
+        }
     }
-}
 
-/**
- *
- * @param {Number} primarySpan          Beam primary span length
- * @param {Number} secondarySpan        Beam secondary span length
- * @param {Material} material           Beam material object
- */
-class Beam {
-    constructor(primarySpan, secondarySpan, material) {
-        this.primarySpan = primarySpan;
-        this.secondarySpan = secondarySpan;
-        this.material = material;
+    class Material {
+        constructor(name, properties) {
+            this.name = name;
+            this.properties = properties;
+        }
     }
-}
 
-/** ============================ Beam Analysis Class ============================ */
+    // Engine Utama Analisis
+    class BeamAnalysis {
+        constructor() {
+            this.analyzers = {
+                'simply-supported': new SimplySupportedAnalyzer(),
+                'two-span-unequal': new TwoSpanUnequalAnalyzer()
+            };
+        }
 
-class BeamAnalysis {
-    constructor() {
-        this.options = {
-            condition: 'simply-supported'
-        };
+        getAnalyzer(condition) {
+            return this.analyzers[condition];
+        }
 
-        this.analyzer = {
-            'simply-supported': new BeamAnalysis.analyzer.simplySupported(),
-            'two-span-unequal': new BeamAnalysis.analyzer.twoSpanUnequal()
-        };
-    }
-    /**
-     *
-     * @param {Beam} beam
-     * @param {Number} load
-     */
-    getDeflection(beam, load, condition) {
-        var analyzer = this.analyzer[condition];
-
-        if (analyzer) {
+        getDeflection(beam, load, condition) {
+            const analyzer = this.getAnalyzer(condition);
             return {
                 beam: beam,
                 load: load,
-                equation: analyzer.getDeflectionEquation(beam, load)
+                ...analyzer.getDeflectionEquation(beam, load)
             };
-        } else {
-            throw new Error('Invalid condition');
         }
-    }
-    getBendingMoment(beam, load, condition) {
-        var analyzer = this.analyzer[condition];
 
-        if (analyzer) {
+        getBendingMoment(beam, load, condition) {
+            const analyzer = this.getAnalyzer(condition);
             return {
                 beam: beam,
                 load: load,
-                equation: analyzer.getBendingMomentEquation(beam, load)
+                ...analyzer.getBendingMomentEquation(beam, load)
             };
-        } else {
-            throw new Error('Invalid condition');
         }
-    }
-    getShearForce(beam, load, condition) {
-        var analyzer = this.analyzer[condition];
 
-        if (analyzer) {
+        getShearForce(beam, load, condition) {
+            const analyzer = this.getAnalyzer(condition);
             return {
                 beam: beam,
                 load: load,
-                equation: analyzer.getShearForceEquation(beam, load)
+                ...analyzer.getShearForceEquation(beam, load)
             };
-        } else {
-            throw new Error('Invalid condition');
         }
     }
-}
 
-
-
-
-/** ============================ Beam Analysis Analyzer ============================ */
-
-/**
- * Available analyzers for different conditions
- */
-BeamAnalysis.analyzer = {};
-
-/**
- * Calculate deflection, bending stress and shear stress for a simply supported beam
- *
- * @param {Beam}   beam   The beam object
- * @param {Number}  load    The applied load
- */
-BeamAnalysis.analyzer.simplySupported = class {
-    constructor(beam, load) {
-        this.beam = beam;
-        this.load = load;
+    class BaseAnalyzer {
+        getParams(beam, load) {
+            const w = (parseFloat(load) || 0);
+            const L1 = Math.max(0.001, parseFloat(beam.primarySpan) || 0);
+            const L2 = Math.max(0, parseFloat(beam.secondarySpan) || 0);
+            const EI = (beam.material && beam.material.properties && beam.material.properties.EI)
+                ? beam.material.properties.EI / 1e9
+                : 1;
+            return { w, L1, L2, EI };
+        }
     }
-    getDeflectionEquation(beam, load) {
-        return function (x) {
+
+    class SimplySupportedAnalyzer extends BaseAnalyzer {
+        getDeflectionEquation(beam, load) {
+            const { w, L1, EI } = this.getParams(beam, load);
             return {
-                x: x,
-                y: null
+                equation: (x) => ({ x: x, y: StructuralPhysics.calculateSSDeflection(x, L1, w, EI) * 1000 })
             };
-        };
-    }
-    getBendingMomentEquation(beam, load) {
-        return function (x) {
-            return {
-                x: x,
-                y: null
-            };
-        };
-    }
-    getShearForceEquation(beam, load) {
-        return function (x) {
-            return {
-                x: x,
-                y: null
-            };
-        };
-    }
-};
+        }
 
+        getBendingMomentEquation(beam, load) {
+            const { w, L1 } = this.getParams(beam, load);
+            return {
+                equation: (x) => ({ x: x, y: StructuralPhysics.calculateSSMoment(x, L1, w) })
+            };
+        }
 
-/**
- * Calculate deflection, bending stress and shear stress for a beam with two spans of equal condition
- *
- * @param {Beam}   beam   The beam object
- * @param {Number}  load    The applied load
- */
-BeamAnalysis.analyzer.twoSpanUnequal = class {
-    constructor(beam, load) {
-        this.beam = beam;
-        this.load = load;
-    }
-    getDeflectionEquation(beam, load) {
-        return function (x) {
+        getShearForceEquation(beam, load) {
+            const { w, L1 } = this.getParams(beam, load);
             return {
-                x: x,
-                y: null
+                equation: (x) => ({ x: x, y: StructuralPhysics.calculateSSShear(x, L1, w) })
             };
-        };
+        }
     }
-    getBendingMomentEquation(beam, load) {
-        return function (x) {
+
+    class TwoSpanUnequalAnalyzer extends BaseAnalyzer {
+        getDeflectionEquation(beam, load) {
+            const { w, L1, L2, EI } = this.getParams(beam, load);
+            const ctx = StructuralPhysics.getTwoSpanContext(w, L1, L2, EI);
             return {
-                x: x,
-                y: null
+                discontinuities: [L1],
+                equation: (x) => ({ x: x, y: StructuralPhysics.calculateTwoSpanDeflection(x, ctx) * 1000 })
             };
-        };
-    }
-    getShearForceEquation(beam, load) {
-        return function (x) {
+        }
+
+        getBendingMomentEquation(beam, load) {
+            const { w, L1, L2, EI } = this.getParams(beam, load);
+            const ctx = StructuralPhysics.getTwoSpanContext(w, L1, L2, EI);
             return {
-                x: x,
-                y: null
+                discontinuities: [L1],
+                equation: (x) => ({ x: x, y: StructuralPhysics.calculateTwoSpanMoment(x, ctx) })
             };
-        };
+        }
+
+        getShearForceEquation(beam, load) {
+            const { w, L1, L2, EI } = this.getParams(beam, load);
+            const ctx = StructuralPhysics.getTwoSpanContext(w, L1, L2, EI);
+            return {
+                discontinuities: [L1],
+                equation: (x, side = 'auto') => ({
+                    x: x,
+                    y: StructuralPhysics.calculateTwoSpanShear(x, ctx, side)
+                })
+            };
+        }
     }
-};
+
+    global.Beam = Beam;
+    global.Material = Material;
+    global.BeamAnalysis = BeamAnalysis;
+
+})(typeof window !== 'undefined' ? window : global);

@@ -1,0 +1,44 @@
+body {
+    background-color: #f0f2f5;
+    font-size: 0.95rem;
+}
+
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+}
+
+.card-header {
+    background-color: #fff;
+    border-bottom: 1px solid #edf2f7;
+    font-weight: 600;
+    padding: 12px 20px;
+    border-radius: 12px 12px 0 0 !important;
+}
+
+.chart-container {
+    position: relative;
+    height: 250px;
+    width: 100%;
+}
+
+#deflection_plot_container {
+    height: 280px;
+}
+
+.input-group-text {
+    background-color: #f8fafc;
+    font-size: 0.85rem;
+}
+
+hr {
+    color: #cbd5e1;
+}
+
+.btn-calculate {
+    padding: 10px 0;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
