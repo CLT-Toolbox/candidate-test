@@ -56,6 +56,7 @@
     <canvas id="shear_force_plot"></canvas>
     <canvas id="bending_moment_plot"></canvas>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="js/beam-analysis.js"></script>
     <script src="js/analysis-plotter.js"></script>
 
@@ -78,6 +79,7 @@
 
             beam.primarySpan    = floatVal('primarySpan');
             beam.secondarySpan  = floatVal('secondarySpan');
+            beam.j2             = floatVal('j2');
             beam.material       = new Material('No Name', {
                 EI : floatVal('EI')
             });

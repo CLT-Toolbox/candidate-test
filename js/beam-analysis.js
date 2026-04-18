@@ -111,25 +111,36 @@ BeamAnalysis.analyzer.simplySupported = class {
     }
     getDeflectionEquation(beam, load) {
         return function (x) {
+            let L = beam.primarySpan;
+            let w = load;
+            let EI = beam.material.properties.EI / 1000000000;
+            let j2 = beam.j2;
+            let y = -(w * x / (24 * EI)) * (Math.pow(L, 3) - 2 * L * Math.pow(x, 2) + Math.pow(x, 3)) * j2 * 1000;
             return {
                 x: x,
-                y: null
+                y: y
             };
         };
     }
     getBendingMomentEquation(beam, load) {
         return function (x) {
+            let L = beam.primarySpan;
+            let w = load;
+            let y = -(w * x / 2) * (L - x);
             return {
                 x: x,
-                y: null
+                y: y
             };
         };
     }
     getShearForceEquation(beam, load) {
         return function (x) {
+            let L = beam.primarySpan;
+            let w = load;
+            let y = w * (L / 2 - x);
             return {
                 x: x,
-                y: null
+                y: y
             };
         };
     }
@@ -149,25 +160,81 @@ BeamAnalysis.analyzer.twoSpanUnequal = class {
     }
     getDeflectionEquation(beam, load) {
         return function (x) {
+            let L1 = beam.primarySpan;
+            let L2 = beam.secondarySpan;
+            let L = L1 + L2;
+            let w = load;
+            let EI = beam.material.properties.EI / 1000000000;
+            let j2 = beam.j2;
+
+            let M1 = -(w * Math.pow(L2, 3) + w * Math.pow(L1, 3)) / (8 * L);
+            let R1 = (M1 / L1) + (w * L1 / 2);
+            let R3 = (M1 / L2) + (w * L2 / 2);
+            let R2 = w * L1 + w * L2 - R1 - R3;
+
+            let y = 0;
+            if (x <= L1) {
+                y = (x / (24 * EI)) * (4 * R1 * Math.pow(x, 2) - w * Math.pow(x, 3) + w * Math.pow(L1, 3) - 4 * R1 * Math.pow(L1, 2)) * 1000 * j2;
+            } else {
+                let num = (R1 * x / 6) * (Math.pow(x, 2) - Math.pow(L1, 2))
+                          + (R2 * x / 6) * (Math.pow(x, 2) - 3 * L1 * x + 3 * Math.pow(L1, 2))
+                          - (R2 * Math.pow(L1, 3) / 6)
+                          - (w * x / 24) * (Math.pow(x, 3) - Math.pow(L1, 3));
+                y = (num / EI) * 1000 * j2;
+            }
+
             return {
                 x: x,
-                y: null
+                y: y
             };
         };
     }
     getBendingMomentEquation(beam, load) {
         return function (x) {
+            let L1 = beam.primarySpan;
+            let L2 = beam.secondarySpan;
+            let L = L1 + L2;
+            let w = load;
+
+            let M1 = -(w * Math.pow(L2, 3) + w * Math.pow(L1, 3)) / (8 * L);
+            let R1 = (M1 / L1) + (w * L1 / 2);
+            let R3 = (M1 / L2) + (w * L2 / 2);
+            let R2 = w * L1 + w * L2 - R1 - R3;
+
+            let y = 0;
+            if (x <= L1) {
+                y = -(R1 * x - 0.5 * w * Math.pow(x, 2));
+            } else {
+                y = -((R1 * x + R2 * (x - L1)) - (0.5 * w * Math.pow(x, 2)));
+            }
             return {
                 x: x,
-                y: null
+                y: y
             };
         };
     }
     getShearForceEquation(beam, load) {
         return function (x) {
+            let L1 = beam.primarySpan;
+            let L2 = beam.secondarySpan;
+            let L = L1 + L2;
+            let w = load;
+
+            let M1 = -(w * Math.pow(L2, 3) + w * Math.pow(L1, 3)) / (8 * L);
+            let R1 = (M1 / L1) + (w * L1 / 2);
+            let R3 = (M1 / L2) + (w * L2 / 2);
+            let R2 = w * L1 + w * L2 - R1 - R3;
+
+            // Note: Boundary check at L1
+            let y = 0;
+            if (x < L1) {
+                y = R1 - w * x;
+            } else {
+                y = R1 + R2 - w * x;
+            }
             return {
                 x: x,
-                y: null
+                y: y
             };
         };
     }
