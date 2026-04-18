@@ -44,13 +44,11 @@
                 <td>Bending Stiffnes (EI)</td>
                 <td><input type="text" id="EI" value="3150000000000"> Nmm<sup>2</sup></td>
             </tr>
-
             <tr>
                 <td colspan="2">
                     <hr>
                 </td>
             </tr>
-
             <tr>
                 <td colspan="2" style="text-align: center;">
                     <button type="button" id="calculate">Calculate</button>
@@ -58,6 +56,7 @@
             </tr>
         </table>
     </form>
+
     <div style="position:relative; width:100%; height:300px;">
         <canvas id="deflection_plot"></canvas>
     </div>
@@ -68,18 +67,56 @@
         <canvas id="bending_moment_plot"></canvas>
     </div>
 
+    <canvas width="700" height="420" id="playground"></canvas>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
     <script src="js/beam-analysis.js"></script>
     <script src="js/analysis-plotter.js"></script>
 
     <script>
-        /**
-         * Get float value of specified field
-         */
+        var cltLayup = {
+            t1: {
+                label: 'T1',
+                thickness: 45,
+                angle: 0,
+                grade: 'MGP10',
+            },
+            t2: {
+                label: 'T2',
+                thickness: 30,
+                angle: 90,
+                grade: 'MGP6',
+            },
+            t3: {
+                label: 'T3',
+                thickness: 30,
+                angle: 0,
+                grade: 'MGP5',
+            },
+            t4: {
+                label: 'T4',
+                thickness: 30,
+                angle: 90,
+                grade: 'MGP6',
+            },
+            t5: {
+                label: 'T5',
+                thickness: 45,
+                angle: 0,
+                grade: 'MGP10',
+            },
+        };
+
+        var layupDrawer = new LayupDrawer();
+        var playground = document.getElementById('playground');
+
+        layupDrawer.init(playground);
+        layupDrawer.drawLayup(cltLayup);
+    </script>
+
+    <script>
         function floatVal(id) {
-            return parseFloat(
-                document.getElementById(id).value
-            );
+            return parseFloat(document.getElementById(id).value);
         }
 
         function stringVal(id) {
@@ -99,7 +136,7 @@
                 deflection: new AnalysisPlotter('deflection_plot'),
                 shearForce: new AnalysisPlotter('shear_force_plot'),
                 bendingMoment: new AnalysisPlotter('bending_moment_plot')
-            }
+            };
 
             var beamAnalysis = new BeamAnalysis();
             var deflectionData = beamAnalysis.getDeflection(beam, floatVal('w'), stringVal('condition'));
