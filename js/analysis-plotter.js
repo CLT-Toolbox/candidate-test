@@ -140,7 +140,6 @@ class AnalysisPlotter {
         maintainAspectRatio: false,
         resizeDelay: 200,
         animation: false,
-
         plugins: {
           legend: {
             display: true,
