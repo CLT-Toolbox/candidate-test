@@ -1,7 +1,9 @@
 <x-app-layout>
     <x-slot name="header">
+        <!-- Top Navigation Bar -->
         <div class=" text-white px-8 py-4">
             <div class="flex items-center justify-between max-w-7xl mx-auto">
+                <!-- Logo + Title -->
                 <div class="flex items-center gap-3">
                     <div>
                         <div class="font-semibold text-xl">Layup Manager</div>
@@ -14,12 +16,14 @@
 
     <div class="p-8 max-w-7xl mx-auto" x-data="{ openImport: false }">
         
+        <!-- Breadcrumb -->
         <div class="flex items-center gap-2 text-sm text-gray-500 mb-6">
             <a href="{{ route('suppliers.index') }}" class="hover:text-gray-700">Suppliers</a>
             <span class="text-gray-400">›</span>
             <span class="text-gray-800 font-medium">{{ $supplier->name }}</span>
         </div>
 
+        <!-- Supplier Header Card -->
         <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 mb-8">
             <div class="flex justify-between items-start">
                 <div>
@@ -40,16 +44,11 @@
 
         </div>
 
+        <!-- ALERT SECTION -->
         @if(session('success'))
-        <div class="mb-6 px-6 py-4 rounded-2xl bg-green-100 text-green-800 border border-green-200">
-            {{ session('success') }}
-        </div>
-        @endif
-
-        @if(session('error'))
-        <div class="mb-6 px-6 py-4 rounded-2xl bg-red-100 text-red-800 border border-red-200">
-            {{ session('error') }}
-        </div>
+            <div class="mb-6 px-6 py-4 rounded-2xl bg-green-100 text-green-800 border border-green-200">
+                ✅ {{ session('success') }}
+            </div>
         @endif
 
         @if(session('error'))
@@ -58,6 +57,7 @@
             </div>
         @endif
 
+        <!-- Associated Layups Section -->
         <div class="mb-6 flex items-center justify-between">
             <h2 class="text-2xl font-semibold text-gray-800">Associated Layups</h2>
             
@@ -97,6 +97,7 @@
             </div>
         </div>
 
+        <!-- Layups Table -->
         <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
             <table class="w-full">
                 <thead class="bg-gray-50">
@@ -131,6 +132,7 @@
             </table>
         </div>
 
+        <!-- Modal -->
         <div x-show="openImport" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
             
             <div class="bg-white w-full max-w-lg rounded-2xl shadow-lg p-6">
@@ -141,11 +143,13 @@
                     method="POST" enctype="multipart/form-data">
                     @csrf
 
+                    <!-- Upload -->
                     <div class="border-2 border-dashed rounded-xl p-6 text-center mb-4">
                         <input type="file" name="file" class="mb-2">
                         <p class="text-sm text-gray-500">JSON up to 10MB</p>
                     </div>
 
+                    <!-- Strategy -->
                     <div class="mb-4">
                         <label class="text-sm">Conflict Strategy</label>
                         <select name="strategy" class="w-full border rounded-lg px-3 py-2 mt-1">
@@ -157,6 +161,7 @@
                         </select>
                     </div>
 
+                    <!-- Footer -->
                     <div class="flex justify-end gap-2">
                         <button type="button" @click="openImport = false"
                             class="px-4 py-2 border rounded-lg">
@@ -173,29 +178,31 @@
             </div>
         </div>
 
-        @php
-            $conflicts = session()->pull('conflicts'); 
-        @endphp
-
-        @if('conflicts')
+        @if(session('conflicts'))
         <div x-data="conflictHandler(@js(session('conflicts')))">
 
+            <!-- Overlay -->
             <div x-show="open && conflicts.length > 0" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 
+                <!-- Modal -->
                 <div class="bg-white w-full max-w-2xl rounded-2xl shadow-lg p-6">
 
+                    <!-- Header -->
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-lg font-semibold">Resolve Conflicts</h2>
                         <button @click="open = false">✖</button>
                     </div>
 
+                    <!-- Counter -->
                     <div class="text-sm text-gray-500 mb-4">
                         <span x-text="index + 1"></span> of 
                         <span x-text="conflicts.length"></span> conflicts
                     </div>
 
+                    <!-- Content -->
                     <div class="grid grid-cols-2 gap-6">
 
+                        <!-- EXISTING -->
                         <div class="border rounded-xl p-4">
                             <h3 class="font-semibold mb-2 text-gray-600">Existing</h3>
 
@@ -217,6 +224,7 @@
                             </template>
                         </div>
 
+                        <!-- INCOMING -->
                         <div class="border rounded-xl p-4">
                             <h3 class="font-semibold mb-2 text-gray-600">Incoming</h3>
 
@@ -239,8 +247,10 @@
                         </div>
                     </div>
 
+                    <!-- Actions -->
                     <div class="flex justify-between items-center mt-6">
 
+                        <!-- Navigation -->
                         <div class="flex gap-2">
                             <button @click="index--" :disabled="index === 0"
                                 class="px-3 py-1 border rounded">←</button>
@@ -249,6 +259,7 @@
                                 class="px-3 py-1 border rounded">→</button>
                         </div>
 
+                        <!-- Decision -->
                         <div class="flex gap-2">
                             <button
                                 @click="resolve('keep')"
@@ -279,6 +290,7 @@
 
             async resolve(action) {
                 let c = this.conflicts[this.index];
+
                 if (!c) return;
 
                 try {
@@ -297,6 +309,7 @@
                         })
                     });
 
+                    // remove resolved conflict
                     this.conflicts.splice(this.index, 1);
 
                     if (this.conflicts.length === 0) {
@@ -307,6 +320,7 @@
 
                 } catch (e) {
                     alert('Failed to resolve conflict');
+                    console.error(e);
                 }
             }
         }

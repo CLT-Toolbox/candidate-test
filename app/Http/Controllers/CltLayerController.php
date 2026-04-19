@@ -52,9 +52,12 @@ class CltLayerController extends Controller
 
     public function destroy($id)
     {
-        CltLayer::findOrFail($id)->delete();
+        $layer = CltLayer::findOrFail($id);
+        $layupId = $layer->layup_id;
 
-        return redirect()->route('clt-layers.index')
+        $layer->delete(); 
+
+        return redirect()->route('clt-layups.show', $layer->layup_id)
             ->with('success', 'Layer deleted');
     }
 }
