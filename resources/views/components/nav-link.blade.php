@@ -1,11 +1,16 @@
-@props(['active'])
+@props(['active', 'icon'])
 
 @php
-$classes = ($active ?? false)
-            ? 'inline-flex items-center px-1 pt-1 border-b-2 border-indigo-400 dark:border-indigo-600 text-sm font-medium leading-5 text-gray-900 dark:text-gray-100 focus:outline-none focus:border-indigo-700 transition duration-150 ease-in-out'
-            : 'inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-700 focus:outline-none focus:text-gray-700 dark:focus:text-gray-300 focus:border-gray-300 dark:focus:border-gray-700 transition duration-150 ease-in-out';
+    $classes =
+        $active ?? false
+            ? 'flex items-center px-4 py-2.5 text-sm font-bold rounded-xl bg-brand-50 text-brand-600 transition duration-150 ease-in-out border border-brand-100/50'
+            : 'flex items-center px-4 py-2.5 text-sm font-medium rounded-xl text-surface-500 hover:text-brand-600 hover:bg-brand-50 transition duration-150 ease-in-out border border-transparent';
 @endphp
 
 <a {{ $attributes->merge(['class' => $classes]) }}>
-    {{ $slot }}
+    <span class="mr-3 {{ $active ?? false ? 'text-brand-600' : 'text-surface-400' }}">
+        <i data-lucide="{{ $icon }}" class="w-4 h-4"></i>
+    </span>
+
+    <span class="leading-none">{{ $slot }}</span>
 </a>
