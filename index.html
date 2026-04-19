@@ -22,7 +22,7 @@
             </tr>
             <tr>
                 <td>Load Force (w)</td>
-                <td><input type="text" id="w"> kN/m</td>
+                <td><input type="text" id="w" value="7.2"> kN/m</td>
             </tr>
             <tr>
                 <td>Primary Span (L1)</td>
@@ -96,6 +96,11 @@
                 window.alert('Enter a positive Primary Span (L1).');
                 return;
             }
+            var wLoad = floatVal('w');
+            if (!isFinite(wLoad) || !(wLoad > 0)) {
+                window.alert('Enter a positive Load Force (w) in kN/m.');
+                return;
+            }
 
             var plotter = {
                 deflection      : new AnalysisPlotter('deflection_plot'),
@@ -104,9 +109,9 @@
             }
 
             var beamAnalysis        = new BeamAnalysis();
-            var deflectionData      = beamAnalysis.getDeflection(beam, floatVal('w'), condition);
-            var bendingMomentData   = beamAnalysis.getBendingMoment(beam, floatVal('w'), condition);
-            var shearForceData      = beamAnalysis.getShearForce(beam, floatVal('w'), condition);
+            var deflectionData      = beamAnalysis.getDeflection(beam, wLoad, condition);
+            var bendingMomentData   = beamAnalysis.getBendingMoment(beam, wLoad, condition);
+            var shearForceData      = beamAnalysis.getShearForce(beam, wLoad, condition);
 
             plotter.deflection.plot(deflectionData);
             plotter.shearForce.plot(shearForceData);
