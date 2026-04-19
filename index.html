@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Beam Analysis Plot</title>
+    <style>
+        canvas { max-width: 900px; height: 320px !important; margin: 1rem 0; }
+    </style>
 </head>
 <body>
     <form>
@@ -19,7 +22,7 @@
             </tr>
             <tr>
                 <td>Load Force (w)</td>
-                <td><input type="text" id="w"> kN/m</td>
+                <td><input type="text" id="w" value="7.2"> kN/m</td>
             </tr>
             <tr>
                 <td>Primary Span (L1)</td>
@@ -56,6 +59,7 @@
     <canvas id="shear_force_plot"></canvas>
     <canvas id="bending_moment_plot"></canvas>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="js/beam-analysis.js"></script>
     <script src="js/analysis-plotter.js"></script>
 
@@ -79,8 +83,24 @@
             beam.primarySpan    = floatVal('primarySpan');
             beam.secondarySpan  = floatVal('secondarySpan');
             beam.material       = new Material('No Name', {
-                EI : floatVal('EI')
+                EI : floatVal('EI'),
+                j2 : floatVal('j2')
             });
+
+            var condition = stringVal('condition');
+            if (condition === 'two-span-unequal' && !(beam.secondarySpan > 0)) {
+                window.alert('Two-span analysis requires a positive Secondary Span (L2).');
+                return;
+            }
+            if (!(beam.primarySpan > 0)) {
+                window.alert('Enter a positive Primary Span (L1).');
+                return;
+            }
+            var wLoad = floatVal('w');
+            if (!isFinite(wLoad) || !(wLoad > 0)) {
+                window.alert('Enter a positive Load Force (w) in kN/m.');
+                return;
+            }
 
             var plotter = {
                 deflection      : new AnalysisPlotter('deflection_plot'),
@@ -89,9 +109,9 @@
             }
 
             var beamAnalysis        = new BeamAnalysis();
-            var deflectionData      = beamAnalysis.getDeflection(beam, floatVal('w'), stringVal('condition'));
-            var bendingMomentData   = beamAnalysis.getBendingMoment(beam, floatVal('w'), stringVal('condition'));
-            var shearForceData      = beamAnalysis.getShearForce(beam, floatVal('w'), stringVal('condition'));
+            var deflectionData      = beamAnalysis.getDeflection(beam, wLoad, condition);
+            var bendingMomentData   = beamAnalysis.getBendingMoment(beam, wLoad, condition);
+            var shearForceData      = beamAnalysis.getShearForce(beam, wLoad, condition);
 
             plotter.deflection.plot(deflectionData);
             plotter.shearForce.plot(shearForceData);
