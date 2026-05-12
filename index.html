@@ -1,102 +1,519 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
     <title>Beam Analysis Plot</title>
+
+    <style>
+
+        body{
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+
+        h2{
+            margin-bottom: 20px;
+        }
+
+        .container{
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        .form-box{
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        table{
+            width: 100%;
+        }
+
+        td{
+            padding: 8px;
+        }
+
+        input,
+        select{
+
+            width: 100%;
+            padding: 8px;
+
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button{
+
+            background: red;
+            color: white;
+
+            border: none;
+
+            padding: 10px 20px;
+
+            border-radius: 5px;
+
+            cursor: pointer;
+        }
+
+        button:hover{
+            opacity: 0.9;
+        }
+
+        .chart-container{
+
+            background: white;
+
+            margin-top: 30px;
+
+            padding: 20px;
+
+            border-radius: 10px;
+
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        canvas{
+
+            width: 100% !important;
+
+            height: 500px !important;
+        }
+
+    </style>
+
 </head>
+
 <body>
-    <form>
-        <table>
-            <tr>
-                <td>Condition</td>
-                <td>
-                    <select name="condition" id="condition">
-                        <option value="simply-supported">Simply Supported</option>
-                        <option value="two-span-unequal">Two Span Unequal</option>
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <td>Load Force (w)</td>
-                <td><input type="text" id="w"> kN/m</td>
-            </tr>
-            <tr>
-                <td>Primary Span (L1)</td>
-                <td><input type="text" id="primarySpan" value="4"> m</td>
-            </tr>
-            <tr>
-                <td>Secondary Span (L2)</td>
-                <td><input type="text" id="secondarySpan" value=""> m</td>
-            </tr>
-            <tr>
-                <td colspan="2"><hr></td>
-            </tr>
-            <tr>
-                <td>j2</td>
-                <td><input type="text" id="j2" value="2"></td>
-            </tr>
-            <tr>
-                <td>Bending Stiffnes (EI)</td>
-                <td><input type="text" id="EI" value="3150000000000"> Nmm<sup>2</sup></td>
-            </tr>
 
-            <tr>
-                <td colspan="2"><hr></td>
-            </tr>
+<div class="container">
 
-            <tr>
-                <td colspan="2" style="text-align: center;">
-                    <button type="button" id="calculate">Calculate</button>
-                </td>
-            </tr>
-        </table>
-    </form>
-    <canvas id="deflection_plot"></canvas>
-    <canvas id="shear_force_plot"></canvas>
-    <canvas id="bending_moment_plot"></canvas>
+    <div class="form-box">
 
-    <script src="js/beam-analysis.js"></script>
-    <script src="js/analysis-plotter.js"></script>
+        <h2>Beam Analysis Calculator</h2>
 
-    <script>
-        /**
-         * Get float value of specified field
-         */
-        function floatVal(id) {
-            return parseFloat(
-                document.getElementById(id).value
+        <form>
+
+            <table>
+
+                <tr>
+
+                    <td>Condition</td>
+
+                    <td>
+
+                        <select
+                            name="condition"
+                            id="condition"
+                        >
+
+                            <option value="simply-supported">
+                                Simply Supported
+                            </option>
+
+                            <option value="two-span-unequal">
+                                Two Span Unequal
+                            </option>
+
+                        </select>
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td>Load Force (w)</td>
+
+                    <td>
+
+                        <input
+                            type="number"
+                            id="w"
+                            value="20"
+                        >
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td>Primary Span (L1)</td>
+
+                    <td>
+
+                        <input
+                            type="number"
+                            id="primarySpan"
+                            value="4"
+                        >
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td>Secondary Span (L2)</td>
+
+                    <td>
+
+                        <input
+                            type="number"
+                            id="secondarySpan"
+                            value="4"
+                        >
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td>j2</td>
+
+                    <td>
+
+                        <input
+                            type="number"
+                            id="j2"
+                            value="2"
+                        >
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td>Bending Stiffness (EI)</td>
+
+                    <td>
+
+                        <input
+                            type="number"
+                            id="EI"
+                            value="3150000000000"
+                        >
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td colspan="2">
+
+                        <button
+                            type="button"
+                            id="calculate"
+                        >
+                            Calculate
+                        </button>
+
+                    </td>
+
+                </tr>
+
+            </table>
+
+        </form>
+
+    </div>
+
+    <!-- DEFLECTION -->
+    <div class="chart-container">
+
+        <canvas id="deflection_plot"></canvas>
+
+    </div>
+
+    <!-- SHEAR -->
+    <div class="chart-container">
+
+        <canvas id="shear_force_plot"></canvas>
+
+    </div>
+
+    <!-- BENDING -->
+    <div class="chart-container">
+
+        <canvas id="bending_moment_plot"></canvas>
+
+    </div>
+
+</div>
+
+<!-- CHART JS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- BEAM ANALYSIS -->
+<script src="js/beam-analysis.js"></script>
+
+<script>
+
+    /**
+     * Get float value
+     */
+    function floatVal(id) {
+
+        return parseFloat(
+            document.getElementById(id).value
+        ) || 0;
+    }
+
+    /**
+     * Get string value
+     */
+    function stringVal(id) {
+
+        return document.getElementById(id).value;
+    }
+
+    /**
+     * Create Chart
+     */
+    function createChart(
+        canvasId,
+        title,
+        yTitle,
+        dataPoints
+    ) {
+
+        const canvas =
+            document.getElementById(canvasId);
+
+        const ctx =
+            canvas.getContext('2d');
+
+        // destroy old chart
+        if (canvas.chartInstance) {
+
+            canvas.chartInstance.destroy();
+        }
+
+        canvas.chartInstance = new Chart(ctx, {
+
+            type: 'line',
+
+            data: {
+
+                datasets: [{
+
+                    label: title,
+
+                    data: dataPoints,
+
+                    parsing: false,
+
+                    borderColor: 'red',
+
+                    backgroundColor:
+                        'rgba(180,180,180,0.4)',
+
+                    fill: true,
+
+                    tension: 0.35,
+
+                    borderWidth: 4,
+
+                    pointRadius: 0
+                }]
+            },
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+                plugins: {
+
+                    legend: {
+                        display: false
+                    },
+
+                    title: {
+
+                        display: true,
+
+                        text: title,
+
+                        font: {
+                            size: 20
+                        }
+                    }
+                },
+
+                scales: {
+
+                    x: {
+
+                        type: 'linear',
+
+                        title: {
+
+                            display: true,
+
+                            text: 'Span (m)',
+
+                            font: {
+                                size: 16
+                            }
+                        },
+
+                        grid: {
+                            color: '#d9d9d9'
+                        }
+                    },
+
+                    y: {
+
+                        title: {
+
+                            display: true,
+
+                            text: yTitle,
+
+                            font: {
+                                size: 16
+                            }
+                        },
+
+                        grid: {
+                            color: '#d9d9d9'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * Calculate
+     */
+    document
+        .getElementById('calculate')
+        .addEventListener('click', function () {
+
+            const beam = new Beam(
+
+                floatVal('primarySpan'),
+
+                floatVal('secondarySpan'),
+
+                new Material('No Name', {
+
+                    EI: floatVal('EI')
+                })
             );
-        }
 
-        function stringVal(id) {
-            return document.getElementById(id).value;
-        }
+            const load =
+                floatVal('w');
 
-        document.getElementById('calculate').addEventListener('click', function(e) {
-            var beam = new Beam();
+            const condition =
+                stringVal('condition');
 
-            beam.primarySpan    = floatVal('primarySpan');
-            beam.secondarySpan  = floatVal('secondarySpan');
-            beam.material       = new Material('No Name', {
-                EI : floatVal('EI')
-            });
+            const beamAnalysis =
+                new BeamAnalysis();
 
-            var plotter = {
-                deflection      : new AnalysisPlotter('deflection_plot'),
-                shearForce      : new AnalysisPlotter('shear_force_plot'),
-                bendingMoment   : new AnalysisPlotter('bending_moment_plot')
+            // equations
+            const deflection =
+                beamAnalysis.getDeflection(
+                    beam,
+                    load,
+                    condition
+                );
+
+            const bending =
+                beamAnalysis.getBendingMoment(
+                    beam,
+                    load,
+                    condition
+                );
+
+            const shear =
+                beamAnalysis.getShearForce(
+                    beam,
+                    load,
+                    condition
+                );
+
+            // arrays
+            let deflectionData = [];
+            let bendingData = [];
+            let shearData = [];
+
+            // span
+            let L =
+                beam.primarySpan;
+
+            // generate graph points
+            for (let x = 0; x <= L; x += 0.05) {
+
+                deflectionData.push(
+                    deflection.equation(x)
+                );
+
+                bendingData.push(
+                    bending.equation(x)
+                );
+
+                shearData.push(
+                    shear.equation(x)
+                );
             }
 
-            var beamAnalysis        = new BeamAnalysis();
-            var deflectionData      = beamAnalysis.getDeflection(beam, floatVal('w'), stringVal('condition'));
-            var bendingMomentData   = beamAnalysis.getBendingMoment(beam, floatVal('w'), stringVal('condition'));
-            var shearForceData      = beamAnalysis.getShearForce(beam, floatVal('w'), stringVal('condition'));
+            // DEFLECTION
+            createChart(
 
-            plotter.deflection.plot(deflectionData);
-            plotter.shearForce.plot(shearForceData);
-            plotter.bendingMoment.plot(bendingMomentData);
+                'deflection_plot',
+
+                'Deflection Diagram',
+
+                'Deflection (mm)',
+
+                deflectionData
+            );
+
+            // SHEAR
+            createChart(
+
+                'shear_force_plot',
+
+                'Shear Force Diagram',
+
+                'Shear Force (kN)',
+
+                shearData
+            );
+
+            // BENDING
+            createChart(
+
+                'bending_moment_plot',
+
+                'Bending Moment Diagram',
+
+                'Bending Moment (kNm)',
+
+                bendingData
+            );
         });
-    </script>
+
+</script>
+
 </body>
 </html>
