@@ -1,8 +1,8 @@
 'use strict';
 
 /** =========================================================
- * EXACT EXCEL VERSION
- * FINAL FIX (MATCH EXCEL TABLE + GRAPH)
+ * BEAM ANALYSIS
+ * MATCH EXCEL + GRAPH
  * ========================================================= */
 
 class Material {
@@ -46,7 +46,9 @@ class Beam {
     getTotalLength() {
 
         return (
+
             this.primarySpan +
+
             this.secondarySpan
         );
     }
@@ -99,6 +101,7 @@ class BeamAnalysis {
             load,
 
             equation:
+
                 this
                     .getAnalyzer(condition)
                     .getDeflectionEquation(
@@ -120,6 +123,7 @@ class BeamAnalysis {
             load,
 
             equation:
+
                 this
                     .getAnalyzer(condition)
                     .getBendingMomentEquation(
@@ -141,6 +145,7 @@ class BeamAnalysis {
             load,
 
             equation:
+
                 this
                     .getAnalyzer(condition)
                     .getShearForceEquation(
@@ -159,6 +164,58 @@ BeamAnalysis.analyzer = {};
 
 BeamAnalysis.analyzer.simplySupported = class {
 
+    constructor() {
+
+        this.EPSILON = 1e-9;
+    }
+
+    isEqual(a, b) {
+
+        return (
+            Math.abs(a - b) <
+            this.EPSILON
+        );
+    }
+
+    /** =====================================================
+     * REACTION
+     * ===================================================== */
+
+    getReaction(
+        beam,
+        load
+    ) {
+
+        const L =
+            beam.primarySpan;
+
+        const w =
+            Number(load);
+
+        const R =
+
+            (
+                w * L
+            ) / 2;
+
+        return {
+
+            R1:
+                Number(
+                    R.toFixed(6)
+                ),
+
+            R2:
+                Number(
+                    R.toFixed(6)
+                )
+        };
+    }
+
+    /** =====================================================
+     * SHEAR
+     * ===================================================== */
+
     getShearForceEquation(
         beam,
         load
@@ -170,16 +227,34 @@ BeamAnalysis.analyzer.simplySupported = class {
         const w =
             Number(load);
 
-        return function (x) {
+        const reaction =
+            this.getReaction(
+                beam,
+                load
+            );
+
+        return (x) => {
 
             x = Number(x);
 
-            const V =
+            let V =
 
-                w *
+                reaction.R1 -
+
                 (
-                    (L / 2) - x
+                    w * x
                 );
+
+            /**
+             * exact support
+             */
+
+            if (
+                this.isEqual(x, L)
+            ) {
+
+                V = -reaction.R2;
+            }
 
             return {
 
@@ -193,6 +268,10 @@ BeamAnalysis.analyzer.simplySupported = class {
         };
     }
 
+    /** =====================================================
+     * BENDING
+     * ===================================================== */
+
     getBendingMomentEquation(
         beam,
         load
@@ -204,26 +283,45 @@ BeamAnalysis.analyzer.simplySupported = class {
         const w =
             Number(load);
 
-        return function (x) {
+        const reaction =
+            this.getReaction(
+                beam,
+                load
+            );
+
+        return (x) => {
 
             x = Number(x);
 
+            let M =
+
+                (
+                    reaction.R1 * x
+                ) -
+
+                (
+                    w *
+                    Math.pow(x, 2) / 2
+                );
+
             /**
-             * EXACT EXCEL
-             * negative sagging
+             * Excel convention
+             * sagging negative
              */
 
-            const M =
+            M = -M;
 
-                -(
-                    (
-                        w *
-                        x *
-                        (
-                            L - x
-                        )
-                    ) / 2
-                );
+            /**
+             * supports = 0
+             */
+
+            if (
+                this.isEqual(x, 0) ||
+                this.isEqual(x, L)
+            ) {
+
+                M = 0;
+            }
 
             return {
 
@@ -231,11 +329,15 @@ BeamAnalysis.analyzer.simplySupported = class {
 
                 y:
                     Number(
-                        M.toFixed(2)
+                        M.toFixed(6)
                     )
             };
         };
     }
+
+    /** =====================================================
+     * DEFLECTION
+     * ===================================================== */
 
     getDeflectionEquation(
         beam,
@@ -263,16 +365,15 @@ BeamAnalysis.analyzer.simplySupported = class {
         const EI_CONVERTED =
             EI / Math.pow(1000, 3);
 
-        return function (x) {
+        return (x) => {
 
             x = Number(x);
 
-            const y =
+            let y =
 
                 -(
                     (
-                        w *
-                        x
+                        w * x
                     ) /
 
                     (
@@ -291,11 +392,28 @@ BeamAnalysis.analyzer.simplySupported = class {
                     ) +
 
                     Math.pow(x, 3)
-                ) *
+                );
 
-                j2 *
+            /**
+             * scale
+             */
 
-                1000;
+            y =
+                y *
+                1000 *
+                j2;
+
+            /**
+             * supports = 0
+             */
+
+            if (
+                this.isEqual(x, 0) ||
+                this.isEqual(x, L)
+            ) {
+
+                y = 0;
+            }
 
             return {
 
@@ -308,13 +426,49 @@ BeamAnalysis.analyzer.simplySupported = class {
             };
         };
     }
+
+    /** =====================================================
+     * GRAPH POINTS
+     * ===================================================== */
+
+    getCriticalPoints(
+        beam
+    ) {
+
+        return [
+
+            0,
+
+            beam.primarySpan / 2,
+
+            beam.primarySpan
+        ];
+    }
 };
 
 /** =========================================================
- * TWO UNEQUAL SPAN
+ * TWO SPAN UNEQUAL
  * ========================================================= */
 
 BeamAnalysis.analyzer.twoSpanUnequal = class {
+
+    constructor() {
+
+        this.EPSILON = 1e-9;
+    }
+
+    isEqual(a, b) {
+
+        return (
+            Math.abs(a - b) <
+            this.EPSILON
+        );
+    }
+
+    /** =====================================================
+     * REACTION
+     * EXACT EXCEL
+     * ===================================================== */
 
     getReaction(
         beam,
@@ -330,8 +484,11 @@ BeamAnalysis.analyzer.twoSpanUnequal = class {
         const w =
             Number(load);
 
+        const total =
+            L1 + L2;
+
         /**
-         * EXACT EXCEL
+         * exact excel
          */
 
         const M1 =
@@ -349,44 +506,33 @@ BeamAnalysis.analyzer.twoSpanUnequal = class {
             ) /
 
             (
-                8 *
-                (
-                    L1 + L2
-                )
+                8 * total
             );
 
         const R1 =
 
             (
-                M1 / L1
+                w * L1 / 2
             ) +
 
             (
-                (
-                    w * L1
-                ) / 2
+                M1 / L1
             );
 
         const R3 =
 
             (
-                M1 / L2
+                w * L2 / 2
             ) +
 
             (
-                (
-                    w * L2
-                ) / 2
+                M1 / L2
             );
 
         const R2 =
 
             (
-                w * L1
-            ) +
-
-            (
-                w * L2
+                w * total
             ) -
 
             R1 -
@@ -396,21 +542,29 @@ BeamAnalysis.analyzer.twoSpanUnequal = class {
         return {
 
             M1:
-                Number(M1.toFixed(6)),
+                Number(
+                    M1.toFixed(6)
+                ),
 
             R1:
-                Number(R1.toFixed(6)),
+                Number(
+                    R1.toFixed(6)
+                ),
 
             R2:
-                Number(R2.toFixed(6)),
+                Number(
+                    R2.toFixed(6)
+                ),
 
             R3:
-                Number(R3.toFixed(6))
+                Number(
+                    R3.toFixed(6)
+                )
         };
     }
 
     /** =====================================================
-     * SHEAR FORCE
+     * SHEAR
      * ===================================================== */
 
     getShearForceEquation(
@@ -433,7 +587,7 @@ BeamAnalysis.analyzer.twoSpanUnequal = class {
                 load
             );
 
-        return function (x) {
+        return (x) => {
 
             x = Number(x);
 
@@ -455,6 +609,30 @@ BeamAnalysis.analyzer.twoSpanUnequal = class {
             }
 
             /**
+             * MID SUPPORT
+             */
+
+            else if (
+                this.isEqual(x, L1)
+            ) {
+
+                /**
+                 * IMPORTANT:
+                 * graph vertical jump
+                 */
+
+                V =
+
+                    reaction.R1 -
+
+                    (
+                        w * x
+                    ) +
+
+                    reaction.R2;
+            }
+
+            /**
              * RIGHT SPAN
              */
 
@@ -472,21 +650,31 @@ BeamAnalysis.analyzer.twoSpanUnequal = class {
                     );
             }
 
+            /**
+             * right support
+             */
+
+            if (
+                this.isEqual(x, total)
+            ) {
+
+                V = -reaction.R3;
+            }
+
             return {
 
                 x,
 
                 y:
                     Number(
-                        V.toFixed(2)
+                        V.toFixed(6)
                     )
             };
         };
     }
 
     /** =====================================================
-     * BENDING MOMENT
-     * EXACTLY MATCH EXCEL
+     * BENDING
      * ===================================================== */
 
     getBendingMomentEquation(
@@ -509,87 +697,82 @@ BeamAnalysis.analyzer.twoSpanUnequal = class {
                 load
             );
 
-        return function (x) {
+        return (x) => {
 
             x = Number(x);
 
             let M = 0;
 
             /**
-             * SUPPORTS
+             * left span
              */
 
-            if (
-                x === 0 ||
-                x === total
-            ) {
-
-                M = 0;
-            }
-
-            /**
-             * LEFT SPAN
-             *
-             * EXACT EXCEL:
-             * =-((R1*x)-((w*x^2)/2))
-             */
-
-            else if (x < L1) {
+            if (x <= L1) {
 
                 M =
 
-                    -(
-                        (
-                            reaction.R1 * x
-                        ) -
+                    (
+                        reaction.R1 * x
+                    ) -
 
-                        (
-                            w *
-                            Math.pow(x, 2) / 2
-                        )
+                    (
+                        w *
+                        Math.pow(x, 2) / 2
                     );
             }
 
             /**
-             * MID SUPPORT
-             *
-             * EXACT EXCEL:
-             * negative hogging
-             */
-
-            else if (x === L1) {
-
-                M = reaction.M1;
-            }
-
-            /**
-             * RIGHT SPAN
-             *
-             * EXACT EXCEL:
-             * =-((R1*x)+(R2*(x-L1))-((w*x^2)/2))
+             * right span
              */
 
             else {
 
                 M =
 
-                    -(
-                        (
-                            reaction.R1 * x
-                        ) +
+                    (
+                        reaction.R1 * x
+                    ) +
 
+                    (
+                        reaction.R2 *
                         (
-                            reaction.R2 *
-                            (
-                                x - L1
-                            )
-                        ) -
-
-                        (
-                            w *
-                            Math.pow(x, 2) / 2
+                            x - L1
                         )
+                    ) -
+
+                    (
+                        w *
+                        Math.pow(x, 2) / 2
                     );
+            }
+
+            /**
+             * Excel convention
+             */
+
+            M = -M;
+
+            /**
+             * exact support moment
+             */
+
+            if (
+                this.isEqual(x, L1)
+            ) {
+
+                M = reaction.M1;
+            }
+
+            /**
+             * supports zero
+             */
+
+            if (
+                this.isEqual(x, 0) ||
+                this.isEqual(x, total)
+            ) {
+
+                M = 0;
             }
 
             return {
@@ -598,7 +781,7 @@ BeamAnalysis.analyzer.twoSpanUnequal = class {
 
                 y:
                     Number(
-                        M.toFixed(2)
+                        M.toFixed(6)
                     )
             };
         };
@@ -615,6 +798,9 @@ BeamAnalysis.analyzer.twoSpanUnequal = class {
 
         const L1 =
             beam.primarySpan;
+
+        const total =
+            beam.getTotalLength();
 
         const EI =
             beam
@@ -640,7 +826,7 @@ BeamAnalysis.analyzer.twoSpanUnequal = class {
         const EI_CONVERTED =
             EI / Math.pow(1000, 3);
 
-        return function (x) {
+        return (x) => {
 
             x = Number(x);
 
@@ -685,11 +871,7 @@ BeamAnalysis.analyzer.twoSpanUnequal = class {
                             reaction.R1 *
                             Math.pow(L1, 2)
                         )
-                    ) *
-
-                    1000 *
-
-                    j2;
+                    );
             }
 
             /**
@@ -768,11 +950,35 @@ BeamAnalysis.analyzer.twoSpanUnequal = class {
 
                     ) /
 
-                    EI_CONVERTED *
+                    EI_CONVERTED;
+            }
 
-                    1000 *
+            /**
+             * mm scale
+             */
 
-                    j2;
+            y =
+                y *
+                1000 *
+                j2;
+
+            /**
+             * downward negative
+             */
+
+            y = -Math.abs(y);
+
+            /**
+             * supports = zero
+             */
+
+            if (
+                this.isEqual(x, 0) ||
+                this.isEqual(x, L1) ||
+                this.isEqual(x, total)
+            ) {
+
+                y = 0;
             }
 
             return {
@@ -786,9 +992,62 @@ BeamAnalysis.analyzer.twoSpanUnequal = class {
             };
         };
     }
+
+    /** =====================================================
+     * CRITICAL POINTS
+     * ===================================================== */
+
+    getCriticalPoints(
+        beam,
+        load
+    ) {
+
+        const w =
+            Number(load);
+
+        const reaction =
+            this.getReaction(
+                beam,
+                load
+            );
+
+        const total =
+            beam.getTotalLength();
+
+        return [
+
+            0,
+
+            beam.primarySpan,
+
+            total,
+
+            /**
+             * zero shear left
+             */
+
+            reaction.R1 / w,
+
+            /**
+             * zero shear right
+             */
+
+            (
+                reaction.R1 +
+                reaction.R2
+            ) / w
+
+        ]
+        .filter(v =>
+            v >= 0 &&
+            v <= total
+        )
+        .sort((a, b) => a - b);
+    }
 };
 
 module.exports = {
+
     Material,
     Beam,
     BeamAnalysis

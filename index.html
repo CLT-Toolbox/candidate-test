@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 
     <meta charset="UTF-8">
@@ -13,38 +14,44 @@
 
     <style>
 
-        body{
+        body {
+
             font-family: Arial, sans-serif;
             margin: 20px;
             background: #f5f5f5;
         }
 
-        h2{
+        h2 {
+
             margin-bottom: 20px;
         }
 
-        .container{
+        .container {
+
             max-width: 1200px;
             margin: auto;
         }
 
-        .form-box{
+        .form-box {
+
             background: white;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
 
-        table{
+        table {
+
             width: 100%;
         }
 
-        td{
+        td {
+
             padding: 8px;
         }
 
         input,
-        select{
+        select {
 
             width: 100%;
             padding: 8px;
@@ -53,7 +60,7 @@
             border-radius: 5px;
         }
 
-        button{
+        button {
 
             background: red;
             color: white;
@@ -67,11 +74,12 @@
             cursor: pointer;
         }
 
-        button:hover{
+        button:hover {
+
             opacity: 0.9;
         }
 
-        .chart-container{
+        .chart-container {
 
             background: white;
 
@@ -84,11 +92,25 @@
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
 
-        canvas{
+        canvas {
 
             width: 100% !important;
-
             height: 500px !important;
+        }
+
+        .reaction-box {
+
+            margin-top: 20px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .reaction-box p {
+
+            margin: 8px 0;
+            font-size: 16px;
         }
 
     </style>
@@ -122,7 +144,7 @@
                                 Simply Supported
                             </option>
 
-                            <option value="two-span-unequal">
+                            <option value="two-span-unequal" selected>
                                 Two Span Unequal
                             </option>
 
@@ -141,7 +163,8 @@
                         <input
                             type="number"
                             id="w"
-                            value="20"
+                            value="28.86"
+                            step="0.01"
                         >
 
                     </td>
@@ -158,6 +181,7 @@
                             type="number"
                             id="primarySpan"
                             value="4"
+                            step="0.01"
                         >
 
                     </td>
@@ -173,7 +197,8 @@
                         <input
                             type="number"
                             id="secondarySpan"
-                            value="4"
+                            value="5"
+                            step="0.01"
                         >
 
                     </td>
@@ -189,7 +214,8 @@
                         <input
                             type="number"
                             id="j2"
-                            value="2"
+                            value="4"
+                            step="0.01"
                         >
 
                     </td>
@@ -233,6 +259,11 @@
 
     </div>
 
+    <div
+        class="reaction-box"
+        id="reactionBox"
+    ></div>
+
     <!-- DEFLECTION -->
     <div class="chart-container">
 
@@ -264,9 +295,6 @@
 
 <script>
 
-    /**
-     * Get float value
-     */
     function floatVal(id) {
 
         return parseFloat(
@@ -274,17 +302,15 @@
         ) || 0;
     }
 
-    /**
-     * Get string value
-     */
     function stringVal(id) {
 
         return document.getElementById(id).value;
     }
 
     /**
-     * Create Chart
+     * Create chart
      */
+
     function createChart(
         canvasId,
         title,
@@ -298,7 +324,6 @@
         const ctx =
             canvas.getContext('2d');
 
-        // destroy old chart
         if (canvas.chartInstance) {
 
             canvas.chartInstance.destroy();
@@ -321,15 +346,17 @@
                     borderColor: 'red',
 
                     backgroundColor:
-                        'rgba(180,180,180,0.4)',
+                        'rgba(255,0,0,0.08)',
 
-                    fill: true,
+                    fill: false,
 
-                    tension: 0.35,
+                    tension: 0,
 
-                    borderWidth: 4,
+                    borderWidth: 3,
 
-                    pointRadius: 0
+                    pointRadius: 0,
+
+                    pointHoverRadius: 0
                 }]
             },
 
@@ -339,9 +366,12 @@
 
                 maintainAspectRatio: false,
 
+                animation: false,
+
                 plugins: {
 
                     legend: {
+
                         display: false
                     },
 
@@ -352,6 +382,7 @@
                         text: title,
 
                         font: {
+
                             size: 20
                         }
                     }
@@ -370,12 +401,19 @@
                             text: 'Span (m)',
 
                             font: {
+
                                 size: 16
                             }
                         },
 
                         grid: {
+
                             color: '#d9d9d9'
+                        },
+
+                        ticks: {
+
+                            stepSize: 1
                         }
                     },
 
@@ -388,11 +426,13 @@
                             text: yTitle,
 
                             font: {
+
                                 size: 16
                             }
                         },
 
                         grid: {
+
                             color: '#d9d9d9'
                         }
                     }
@@ -402,11 +442,18 @@
     }
 
     /**
-     * Calculate
+     * MAIN
      */
+
     document
         .getElementById('calculate')
         .addEventListener('click', function () {
+
+            const condition =
+                stringVal('condition');
+
+            const load =
+                floatVal('w');
 
             const beam = new Beam(
 
@@ -416,20 +463,22 @@
 
                 new Material('No Name', {
 
-                    EI: floatVal('EI')
+                    EI:
+                        floatVal('EI'),
+
+                    j2:
+                        floatVal('j2')
                 })
             );
-
-            const load =
-                floatVal('w');
-
-            const condition =
-                stringVal('condition');
 
             const beamAnalysis =
                 new BeamAnalysis();
 
-            // equations
+            const analyzer =
+                beamAnalysis.getAnalyzer(
+                    condition
+                );
+
             const deflection =
                 beamAnalysis.getDeflection(
                     beam,
@@ -451,32 +500,133 @@
                     condition
                 );
 
-            // arrays
-            let deflectionData = [];
-            let bendingData = [];
-            let shearData = [];
+            /**
+             * TOTAL LENGTH
+             */
 
-            // span
-            let L =
-                beam.primarySpan;
+            let totalLength;
 
-            // generate graph points
-            for (let x = 0; x <= L; x += 0.05) {
+            if (
+                condition ===
+                'two-span-unequal'
+            ) {
+
+                totalLength =
+                    beam.getTotalLength();
+            }
+
+            else {
+
+                totalLength =
+                    beam.primarySpan;
+            }
+
+            /**
+             * X VALUES
+             */
+
+            let xValues = [];
+
+            for (
+                let x = 0;
+                x <= totalLength;
+                x += 0.05
+            ) {
+
+                xValues.push(
+
+                    Number(
+                        x.toFixed(6)
+                    )
+                );
+            }
+
+            /**
+             * IMPORTANT:
+             * add support point
+             */
+
+            if (
+                condition ===
+                'two-span-unequal'
+            ) {
+
+                const criticalPoints =
+                    analyzer.getCriticalPoints(
+                        beam,
+                        load
+                    );
+
+                xValues.push(
+                    ...criticalPoints
+                );
+
+                /**
+                 * ADD EXTRA POINTS
+                 * for vertical jump at R2
+                 */
+
+                const L1 =
+                    beam.primarySpan;
+
+                xValues.push(
+                    Number(
+                        (L1 - 0.0001)
+                        .toFixed(6)
+                    )
+                );
+
+                xValues.push(
+                    Number(
+                        (L1 + 0.0001)
+                        .toFixed(6)
+                    )
+                );
+            }
+
+            /**
+             * remove duplicates
+             */
+
+            xValues = [
+                ...new Set(xValues)
+            ];
+
+            /**
+             * sort
+             */
+
+            xValues.sort(
+                (a, b) => a - b
+            );
+
+            /**
+             * BUILD DATA
+             */
+
+            const deflectionData = [];
+            const shearData = [];
+            const bendingData = [];
+
+            xValues.forEach(x => {
 
                 deflectionData.push(
                     deflection.equation(x)
                 );
 
-                bendingData.push(
-                    bending.equation(x)
-                );
-
                 shearData.push(
                     shear.equation(x)
                 );
-            }
 
-            // DEFLECTION
+                bendingData.push(
+                    bending.equation(x)
+                );
+            });
+
+            /**
+             * CREATE CHARTS
+             */
+
             createChart(
 
                 'deflection_plot',
@@ -488,7 +638,6 @@
                 deflectionData
             );
 
-            // SHEAR
             createChart(
 
                 'shear_force_plot',
@@ -500,18 +649,64 @@
                 shearData
             );
 
-            // BENDING
             createChart(
 
                 'bending_moment_plot',
 
                 'Bending Moment Diagram',
 
-                'Bending Moment (kNm)',
+                'Bending Moment (kN.m)',
 
                 bendingData
             );
+
+            /**
+             * SHOW REACTION
+             */
+
+            const reactionBox =
+                document.getElementById(
+                    'reactionBox'
+                );
+
+            if (
+                condition ===
+                'two-span-unequal'
+            ) {
+
+                const reaction =
+                    analyzer.getReaction(
+                        beam,
+                        load
+                    );
+
+                reactionBox.innerHTML = `
+
+                    <h3>Reaction Result</h3>
+
+                    <p><strong>M1</strong> = ${reaction.M1.toFixed(3)} kN.m</p>
+
+                    <p><strong>R1</strong> = ${reaction.R1.toFixed(3)} kN</p>
+
+                    <p><strong>R2</strong> = ${reaction.R2.toFixed(3)} kN</p>
+
+                    <p><strong>R3</strong> = ${reaction.R3.toFixed(3)} kN</p>
+                `;
+            }
+
+            else {
+
+                reactionBox.innerHTML = '';
+            }
         });
+
+    /**
+     * AUTO RUN
+     */
+
+    document
+        .getElementById('calculate')
+        .click();
 
 </script>
 
