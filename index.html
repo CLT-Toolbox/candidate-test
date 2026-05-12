@@ -1,102 +1,323 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Beam Analysis Plot</title>
+    <title>Beam Analysis Calculator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --input-bg: rgba(0, 0, 0, 0.2);
+            --input-border: rgba(255, 255, 255, 0.1);
+            --input-focus: rgba(59, 130, 246, 0.5);
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', system-ui, Arial, sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            text-align: center;
+            background: linear-gradient(to right, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+            font-weight: 300;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            padding: 32px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            align-items: end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            letter-spacing: 0.02em;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper input,
+        .input-wrapper select {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 10px;
+            font-size: 1rem;
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            transition: all 0.2s ease;
+        }
+
+        .input-wrapper select {
+            appearance: none;
+            cursor: pointer;
+        }
+
+        .input-wrapper select option {
+            background: #1e293b;
+            color: #f8fafc;
+        }
+
+        .input-wrapper input:focus,
+        .input-wrapper select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--input-focus);
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .input-wrapper .suffix {
+            position: absolute;
+            right: 16px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        /* Add right padding to inputs with suffix */
+        .input-wrapper.has-suffix input {
+            padding-right: 60px;
+        }
+
+        .btn-container {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        #calculate {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
+            color: #fff;
+            border: none;
+            padding: 14px 48px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            letter-spacing: 0.02em;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+            font-family: 'Outfit', sans-serif;
+        }
+
+        #calculate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
+        }
+
+        #calculate:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 10px rgba(59, 130, 246, 0.4);
+        }
+
+        .charts-container {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            margin-top: 16px;
+            width: 100%;
+        }
+
+        .chart-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            padding: 24px;
+            width: 100%;
+            height: 400px;
+            position: relative;
+        }
+
+        .chart-card canvas {
+            display: block;
+            width: 100% !important;
+            height: 100% !important;
+        }
+    </style>
 </head>
+
 <body>
-    <form>
-        <table>
-            <tr>
-                <td>Condition</td>
-                <td>
-                    <select name="condition" id="condition">
-                        <option value="simply-supported">Simply Supported</option>
-                        <option value="two-span-unequal">Two Span Unequal</option>
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <td>Load Force (w)</td>
-                <td><input type="text" id="w"> kN/m</td>
-            </tr>
-            <tr>
-                <td>Primary Span (L1)</td>
-                <td><input type="text" id="primarySpan" value="4"> m</td>
-            </tr>
-            <tr>
-                <td>Secondary Span (L2)</td>
-                <td><input type="text" id="secondarySpan" value=""> m</td>
-            </tr>
-            <tr>
-                <td colspan="2"><hr></td>
-            </tr>
-            <tr>
-                <td>j2</td>
-                <td><input type="text" id="j2" value="2"></td>
-            </tr>
-            <tr>
-                <td>Bending Stiffnes (EI)</td>
-                <td><input type="text" id="EI" value="3150000000000"> Nmm<sup>2</sup></td>
-            </tr>
 
-            <tr>
-                <td colspan="2"><hr></td>
-            </tr>
+    <div class="container">
+        <div>
+            <h1>Beam Analysis</h1>
+            <div class="subtitle">Structural analysis and visualization</div>
+        </div>
 
-            <tr>
-                <td colspan="2" style="text-align: center;">
-                    <button type="button" id="calculate">Calculate</button>
-                </td>
-            </tr>
-        </table>
-    </form>
-    <canvas id="deflection_plot"></canvas>
-    <canvas id="shear_force_plot"></canvas>
-    <canvas id="bending_moment_plot"></canvas>
+        <div class="glass-card">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="condition">Condition</label>
+                    <div class="input-wrapper">
+                        <select id="condition">
+                            <option value="simply-supported">Simply Supported</option>
+                            <option value="two-span-unequal">Two Span Unequal</option>
+                        </select>
+                        <span class="suffix">▼</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="w">Load Force (w)</label>
+                    <div class="input-wrapper has-suffix">
+                        <input type="text" id="w" value="7.5">
+                        <span class="suffix">kN/m</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="primarySpan">Primary Span (L1)</label>
+                    <div class="input-wrapper has-suffix">
+                        <input type="text" id="primarySpan" value="4">
+                        <span class="suffix">m</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="secondarySpan">Secondary Span (L2)</label>
+                    <div class="input-wrapper has-suffix">
+                        <input type="text" id="secondarySpan" value="">
+                        <span class="suffix">m</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="j2">j2 Factor</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="j2" value="2">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="EI">Bending Stiffness (EI)</label>
+                    <div class="input-wrapper has-suffix">
+                        <input type="text" id="EI" value="3150000000000">
+                        <span class="suffix">N·mm²</span>
+                    </div>
+                </div>
+
+                <div class="btn-container">
+                    <button type="button" id="calculate">Calculate Analysis</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="charts-container">
+            <div class="chart-card">
+                <canvas id="bending_moment_plot"></canvas>
+            </div>
+            <div class="chart-card">
+                <canvas id="shear_force_plot"></canvas>
+            </div>
+            <div class="chart-card">
+                <canvas id="deflection_plot"></canvas>
+            </div>
+        </div>
+    </div>
 
     <script src="js/beam-analysis.js"></script>
     <script src="js/analysis-plotter.js"></script>
-
     <script>
-        /**
-         * Get float value of specified field
-         */
-        function floatVal(id) {
-            return parseFloat(
-                document.getElementById(id).value
-            );
-        }
+        function floatVal(id) { return parseFloat(document.getElementById(id).value); }
+        function stringVal(id) { return document.getElementById(id).value; }
 
-        function stringVal(id) {
-            return document.getElementById(id).value;
-        }
-
-        document.getElementById('calculate').addEventListener('click', function(e) {
+        document.getElementById('calculate').addEventListener('click', function () {
             var beam = new Beam();
-
-            beam.primarySpan    = floatVal('primarySpan');
-            beam.secondarySpan  = floatVal('secondarySpan');
-            beam.material       = new Material('No Name', {
-                EI : floatVal('EI')
+            beam.primarySpan = floatVal('primarySpan');
+            beam.secondarySpan = floatVal('secondarySpan');
+            beam.material = new Material('No Name', {
+                EI: floatVal('EI'),
+                j2: floatVal('j2')
             });
 
-            var plotter = {
-                deflection      : new AnalysisPlotter('deflection_plot'),
-                shearForce      : new AnalysisPlotter('shear_force_plot'),
-                bendingMoment   : new AnalysisPlotter('bending_moment_plot')
-            }
+            var condition = stringVal('condition');
 
-            var beamAnalysis        = new BeamAnalysis();
-            var deflectionData      = beamAnalysis.getDeflection(beam, floatVal('w'), stringVal('condition'));
-            var bendingMomentData   = beamAnalysis.getBendingMoment(beam, floatVal('w'), stringVal('condition'));
-            var shearForceData      = beamAnalysis.getShearForce(beam, floatVal('w'), stringVal('condition'));
+            var beamAnalysis = new BeamAnalysis();
+            var deflectionData = beamAnalysis.getDeflection(beam, floatVal('w'), condition);
+            var bendingMomentData = beamAnalysis.getBendingMoment(beam, floatVal('w'), condition);
+            var shearForceData = beamAnalysis.getShearForce(beam, floatVal('w'), condition);
 
-            plotter.deflection.plot(deflectionData);
-            plotter.shearForce.plot(shearForceData);
-            plotter.bendingMoment.plot(bendingMomentData);
+            new AnalysisPlotter('bending_moment_plot').plot(bendingMomentData);
+            new AnalysisPlotter('shear_force_plot').plot(shearForceData);
+            new AnalysisPlotter('deflection_plot').plot(deflectionData);
         });
+
+        // Trigger calculate on load
+        document.getElementById('calculate').click();
     </script>
 </body>
 </html>
