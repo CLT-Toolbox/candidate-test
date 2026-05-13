@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Beam Analysis Plot</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <form>
@@ -19,7 +20,7 @@
             </tr>
             <tr>
                 <td>Load Force (w)</td>
-                <td><input type="text" id="w"> kN/m</td>
+                <td><input type="text" id="w" value="7"> kN/m</td>
             </tr>
             <tr>
                 <td>Primary Span (L1)</td>
@@ -52,9 +53,9 @@
             </tr>
         </table>
     </form>
-    <canvas id="deflection_plot"></canvas>
-    <canvas id="shear_force_plot"></canvas>
     <canvas id="bending_moment_plot"></canvas>
+    <canvas id="shear_force_plot"></canvas>
+    <canvas id="deflection_plot"></canvas>
 
     <script src="js/beam-analysis.js"></script>
     <script src="js/analysis-plotter.js"></script>
@@ -83,9 +84,9 @@
             });
 
             var plotter = {
-                deflection      : new AnalysisPlotter('deflection_plot'),
+                bendingMoment   : new AnalysisPlotter('bending_moment_plot'),
                 shearForce      : new AnalysisPlotter('shear_force_plot'),
-                bendingMoment   : new AnalysisPlotter('bending_moment_plot')
+                deflection      : new AnalysisPlotter('deflection_plot'),
             }
 
             var beamAnalysis        = new BeamAnalysis();

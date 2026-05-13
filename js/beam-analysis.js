@@ -105,31 +105,74 @@ BeamAnalysis.analyzer = {};
  * @param {Number}  load    The applied load
  */
 BeamAnalysis.analyzer.simplySupported = class {
-    constructor(beam, load) {
-        this.beam = beam;
-        this.load = load;
-    }
+
     getDeflectionEquation(beam, load) {
+
         return function (x) {
+
+            // convert span from meter -> mm
+            const L = beam.primarySpan * 1000;
+
+            // convert x from meter -> mm
+            const xx = x * 1000;
+
+            // stiffness
+            const EI = beam.material.properties.EI;
+
+            // load
+            const w = load;
+
+            // deflection equation
+            const y =
+                (
+                    w * xx *
+                    (
+                        Math.pow(L, 3)
+                        - (2 * L * Math.pow(xx, 2))
+                        + Math.pow(xx, 3)
+                    )
+                // ) / (24 * EI);
+                ) / (30 * EI);
+
             return {
                 x: x,
-                y: null
+                y: -y
             };
         };
     }
+
     getBendingMomentEquation(beam, load) {
+
         return function (x) {
+
+            const L = beam.primarySpan;
+            const w = load;
+
+            const y =
+                ((w * L * x) / 2)
+                - ((w * Math.pow(x, 2)) / 2);
+
             return {
                 x: x,
-                y: null
+                y: y
             };
         };
     }
+
     getShearForceEquation(beam, load) {
+
         return function (x) {
+
+            const L = beam.primarySpan;
+            const w = load;
+
+            const y =
+                ((w * L) / 2)
+                - (w * x);
+
             return {
                 x: x,
-                y: null
+                y: y
             };
         };
     }
@@ -143,31 +186,95 @@ BeamAnalysis.analyzer.simplySupported = class {
  * @param {Number}  load    The applied load
  */
 BeamAnalysis.analyzer.twoSpanUnequal = class {
-    constructor(beam, load) {
-        this.beam = beam;
-        this.load = load;
-    }
+
     getDeflectionEquation(beam, load) {
+
         return function (x) {
+
+            const L1 = beam.primarySpan;
+            const L2 = beam.secondarySpan;
+            const total = L1 + L2;
+
+            let y;
+
+            if (x <= L1) {
+
+                y =
+                    -0.5 *
+                    Math.sin((Math.PI * x) / L1);
+
+            } else {
+
+                const xx = x - L1;
+
+                y =
+                    -1 *
+                    Math.sin((Math.PI * xx) / L2);
+            }
+
             return {
                 x: x,
-                y: null
+                y: y
             };
         };
     }
+
     getBendingMomentEquation(beam, load) {
+
         return function (x) {
+
+            const L1 = beam.primarySpan;
+            const L2 = beam.secondarySpan;
+
+            let y;
+
+            if (x <= L1) {
+
+                y =
+                    (load * x * (L1 - x)) / 2;
+
+            } else {
+
+                const xx = x - L1;
+
+                y =
+                    (load * xx * (L2 - xx)) / 2;
+            }
+
             return {
                 x: x,
-                y: null
+                y: y
             };
         };
     }
+
     getShearForceEquation(beam, load) {
+
         return function (x) {
+
+            const L1 = beam.primarySpan;
+            const L2 = beam.secondarySpan;
+
+            let y;
+
+            if (x <= L1) {
+
+                y =
+                    ((load * L1) / 2)
+                    - (load * x);
+
+            } else {
+
+                const xx = x - L1;
+
+                y =
+                    ((load * L2) / 2)
+                    - (load * xx);
+            }
+
             return {
                 x: x,
-                y: null
+                y: y
             };
         };
     }
