@@ -61,7 +61,91 @@ class AnalysisPlotter {
         }
 
         if (this.container.includes('deflection')) {
-            yLabel = 'Deflection (mm)';
+            yLabel = 'Deflection (mm)';'use strict';
+
+class AnalysisPlotter {
+
+    constructor(container){
+        this.container = container;
+        this.chart = null;
+    }
+
+    plot(data, condition){
+
+        const canvas = document.getElementById(this.container);
+        const ctx = canvas.getContext('2d');
+
+        if(this.chart) this.chart.destroy();
+
+        const beam = data.beam;
+        const eq = data.equation;
+
+        /* ================= X AXIS FIX ================= */
+        const maxX =
+            condition === 'two-span-unequal'
+                ? beam.primarySpan + (beam.secondarySpan || 0)
+                : beam.primarySpan;
+
+        const xStep =
+            condition === 'two-span-unequal' ? 1 : 0.5;
+
+        const points = [];
+
+        for(let x=0; x<=maxX; x+=xStep){
+            points.push(eq(x));
+        }
+
+        /* ================= TYPE ================= */
+        const type =
+            this.container.includes('bending') ? 'bending' :
+            this.container.includes('shear') ? 'shear' :
+            'deflection';
+
+        const yLabel =
+            type === 'bending' ? 'Bending Moment (kNm)' :
+            type === 'shear' ? 'Shear Force (kN)' :
+            'Deflection (mm)';
+
+        this.chart = new Chart(ctx,{
+
+            type:'line',
+
+            data:{
+                datasets:[{
+                    data:points,
+                    borderColor:'red',
+                    borderWidth:2,
+                    pointRadius:0
+                }]
+            },
+
+            options:{
+
+                scales:{
+
+                    x:{
+                        type:'linear',
+                        min:0,
+                        max:maxX,
+                        ticks:{
+                            stepSize:xStep
+                        }
+                    },
+
+                    y:{
+                        ticks:{
+                            stepSize:2
+                        },
+                        title:{
+                            display:true,
+                            text:yLabel
+                        }
+                    }
+                }
+            }
+        });
+    }
+}
         }
 
         // destroy previous chart

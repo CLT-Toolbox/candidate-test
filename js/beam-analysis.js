@@ -54,6 +54,7 @@ class BeamAnalysis {
             return {
                 beam: beam,
                 load: load,
+                condition: condition,
                 equation: analyzer.getDeflectionEquation(beam, load)
             };
         } else {
@@ -67,6 +68,7 @@ class BeamAnalysis {
             return {
                 beam: beam,
                 load: load,
+                condition: condition,
                 equation: analyzer.getBendingMomentEquation(beam, load)
             };
         } else {
@@ -80,6 +82,7 @@ class BeamAnalysis {
             return {
                 beam: beam,
                 load: load,
+                condition: condition,
                 equation: analyzer.getShearForceEquation(beam, load)
             };
         } else {
@@ -185,6 +188,114 @@ BeamAnalysis.analyzer.simplySupported = class {
  * @param {Beam}   beam   The beam object
  * @param {Number}  load    The applied load
  */
+
+
+// BeamAnalysis.analyzer.twoSpanUnequal = class {
+
+//     // =========================
+//     // DEFLECTION (simple continuous approximation)
+//     // =========================
+//     getDeflectionEquation(beam, load) {
+
+//         return function (x) {
+
+//             const L1 = beam.primarySpan;
+//             const L2 = beam.secondarySpan;
+//             const L = L1 + L2;
+//             const EI = beam.material.properties.EI;
+
+//             let xx = x * 1000; // mm
+
+//             let y;
+
+//             // region 1
+//             if (x <= L1) {
+
+//                 const Lmm = L1 * 1000;
+
+//                 y =
+//                     (load * xx *
+//                         (Math.pow(Lmm, 3)
+//                         - 2 * Lmm * Math.pow(xx, 2)
+//                         + Math.pow(xx, 3))
+//                     ) / (30 * EI);
+
+//             } 
+//             // region 2
+//             else {
+
+//                 const x2 = (x - L1) * 1000;
+//                 const Lmm = L2 * 1000;
+
+//                 y =
+//                     (load * x2 *
+//                         (Math.pow(Lmm, 3)
+//                         - 2 * Lmm * Math.pow(x2, 2)
+//                         + Math.pow(x2, 3))
+//                     ) / (30 * EI);
+//             }
+
+//             return {
+//                 x,
+//                 y: -y
+//             };
+//         };
+//     }
+
+//     // =========================
+//     // BENDING MOMENT (piecewise correct)
+//     // =========================
+//     getBendingMomentEquation(beam, load) {
+
+//         return function (x) {
+
+//             const L1 = beam.primarySpan;
+//             const L2 = beam.secondarySpan;
+
+//             let y;
+
+//             if (x <= L1) {
+
+//                 const a = x;
+//                 y = (load * a * (L1 - a)) / 2;
+
+//             } else {
+
+//                 const a = x - L1;
+//                 y = (load * a * (L2 - a)) / 2;
+//             }
+
+//             return { x, y };
+//         };
+//     }
+
+//     // =========================
+//     // SHEAR FORCE (consistent slope dari BM)
+//     // =========================
+//     getShearForceEquation(beam, load) {
+
+//         return function (x) {
+
+//             const L1 = beam.primarySpan;
+//             const L2 = beam.secondarySpan;
+
+//             let y;
+
+//             if (x <= L1) {
+
+//                 y = (load * L1 / 2) - (load * x);
+
+//             } else {
+
+//                 const a = x - L1;
+//                 y = (load * L2 / 2) - (load * a);
+//             }
+
+//             return { x, y };
+//         };
+//     }
+// };
+
 BeamAnalysis.analyzer.twoSpanUnequal = class {
 
     getDeflectionEquation(beam, load) {
@@ -192,30 +303,41 @@ BeamAnalysis.analyzer.twoSpanUnequal = class {
         return function (x) {
 
             const L1 = beam.primarySpan;
-            const L2 = beam.secondarySpan;
-            const total = L1 + L2;
+            const L2 = beam.secondarySpan || 0;
+            const EI = beam.material.properties.EI;
+
+            const xmm = x * 1000;
 
             let y;
 
-            if (x <= L1) {
+            // =========================
+            // SAFETY: kalau L2 kosong → treat sebagai single span
+            // =========================
+            if (!L2 || x <= L1) {
+
+                const Lmm = L1 * 1000;
 
                 y =
-                    -0.5 *
-                    Math.sin((Math.PI * x) / L1);
+                    (load * xmm *
+                        (Math.pow(Lmm, 3)
+                        - 2 * Lmm * Math.pow(xmm, 2)
+                        + Math.pow(xmm, 3))
+                    ) / (30 * EI);
 
             } else {
 
-                const xx = x - L1;
+                const x2 = (x - L1) * 1000;
+                const Lmm = L2 * 1000;
 
                 y =
-                    -1 *
-                    Math.sin((Math.PI * xx) / L2);
+                    (load * x2 *
+                        (Math.pow(Lmm, 3)
+                        - 2 * Lmm * Math.pow(x2, 2)
+                        + Math.pow(x2, 3))
+                    ) / (30 * EI);
             }
 
-            return {
-                x: x,
-                y: y
-            };
+            return { x, y: -y };
         };
     }
 
@@ -224,27 +346,22 @@ BeamAnalysis.analyzer.twoSpanUnequal = class {
         return function (x) {
 
             const L1 = beam.primarySpan;
-            const L2 = beam.secondarySpan;
+            const L2 = beam.secondarySpan || 0;
 
             let y;
 
-            if (x <= L1) {
+            if (!L2 || x <= L1) {
 
-                y =
-                    (load * x * (L1 - x)) / 2;
+                const a = x;
+                y = (load * a * (L1 - a)) / 2;
 
             } else {
 
-                const xx = x - L1;
-
-                y =
-                    (load * xx * (L2 - xx)) / 2;
+                const a = x - L1;
+                y = (load * a * (L2 - a)) / 2;
             }
 
-            return {
-                x: x,
-                y: y
-            };
+            return { x, y };
         };
     }
 
@@ -253,29 +370,21 @@ BeamAnalysis.analyzer.twoSpanUnequal = class {
         return function (x) {
 
             const L1 = beam.primarySpan;
-            const L2 = beam.secondarySpan;
+            const L2 = beam.secondarySpan || 0;
 
             let y;
 
-            if (x <= L1) {
+            if (!L2 || x <= L1) {
 
-                y =
-                    ((load * L1) / 2)
-                    - (load * x);
+                y = (load * L1 / 2) - (load * x);
 
             } else {
 
-                const xx = x - L1;
-
-                y =
-                    ((load * L2) / 2)
-                    - (load * xx);
+                const a = x - L1;
+                y = (load * L2 / 2) - (load * a);
             }
 
-            return {
-                x: x,
-                y: y
-            };
+            return { x, y };
         };
     }
 };
