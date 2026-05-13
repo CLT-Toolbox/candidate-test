@@ -16,6 +16,10 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
                 </div>
+
+                <x-nav-link :href="route('suppliers.index')" :active="request()->routeIs('suppliers.*')">
+                    {{ __('Suppliers') }}
+                </x-nav-link>
             </div>
 
             <!-- Settings Dropdown -->
@@ -71,6 +75,10 @@
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
         </div>
+
+        <x-responsive-nav-link :href="route('suppliers.index')" :active="request()->routeIs('suppliers.*')">
+            {{ __('Suppliers') }}
+        </x-responsive-nav-link>
 
         <!-- Responsive Settings Options -->
         <div class="pt-4 pb-1 border-t border-gray-200 dark:border-gray-600">
