@@ -22,8 +22,13 @@
             <div class="flex gap-2">
 
                 <a href="{{ route('suppliers.export.csv') }}"
-                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow">
-                    Export CSV
+                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow">
+                        Export CSV
+                </a>
+
+                <a href="{{ route('suppliers.import.form') }}"
+                    class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg shadow">
+                        Import CSV
                 </a>
 
                 <a href="{{ route('suppliers.create') }}"

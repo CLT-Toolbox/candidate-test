@@ -26,6 +26,10 @@ Route::middleware('auth')->group(function () {
         ->name('suppliers.create');
     Route::get('/suppliers/export/csv', [SupplierController::class, 'exportCsv'])
         ->name('suppliers.export.csv');
+    Route::get('/suppliers/import', [SupplierController::class, 'importForm'])
+        ->name('suppliers.import.form');
+    Route::post('/suppliers/import', [SupplierController::class, 'importCsv'])
+        ->name('suppliers.import.csv');
     Route::post('/suppliers', [SupplierController::class, 'store'])
         ->name('suppliers.store');
     Route::get('/suppliers/{supplier}', [SupplierController::class, 'show'])

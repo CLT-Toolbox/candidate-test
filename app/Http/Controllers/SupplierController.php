@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Layer;
+use App\Models\Layup;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -66,6 +68,92 @@ class SupplierController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    public function importForm()
+    {
+        return view('suppliers.import');
+    }
+
+    public function importCsv(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt',
+            'strategy' => 'required|in:overwrite,skip,duplicate,reject',
+        ]);
+
+        $strategy = $request->strategy;
+
+        $file = fopen($request->file('file'), 'r');
+
+        fgetcsv($file); // skip header
+
+        // PROCESS ROWS
+        while (($row = fgetcsv($file)) !== false) {
+
+            [$supplierName, $layupName, $order, $thickness, $width, $angle] = $row;
+
+            $supplier = Supplier::firstOrCreate(['name' => $supplierName]);
+
+            $layup = Layup::firstOrCreate([
+                'supplier_id' => $supplier->id,
+                'name' => $layupName
+            ]);
+
+            $existingLayer = Layer::where('layup_id', $layup->id)
+                ->where('layer_order', $order)
+                ->first();
+
+            if ($existingLayer) {
+
+                $isConflict =
+                    $existingLayer->thickness != $thickness ||
+                    $existingLayer->width != $width ||
+                    $existingLayer->angle != $angle;
+
+                if ($isConflict && $strategy === 'reject') {
+                    fclose($file);
+                    return back()->with('error', 'Import aborted due to conflict.');
+                }
+
+                if ($isConflict && $strategy === 'skip') {
+                    continue;
+                }
+
+                if ($isConflict && $strategy === 'overwrite') {
+                    $existingLayer->update([
+                        'thickness' => $thickness,
+                        'width' => $width,
+                        'angle' => $angle,
+                    ]);
+                    continue;
+                }
+
+                if ($isConflict && $strategy === 'duplicate') {
+                    Layer::create([
+                        'layup_id' => $layup->id,
+                        'layer_order' => $order,
+                        'thickness' => $thickness,
+                        'width' => $width,
+                        'angle' => $angle,
+                    ]);
+                    continue;
+                }
+            }
+
+            Layer::create([
+                'layup_id' => $layup->id,
+                'layer_order' => $order,
+                'thickness' => $thickness,
+                'width' => $width,
+                'angle' => $angle,
+            ]);
+        }
+
+        fclose($file);
+
+        return redirect()->route('suppliers.index')
+            ->with('success', 'Import CSV completed successfully');
     }
 
     public function store(Request $request)
