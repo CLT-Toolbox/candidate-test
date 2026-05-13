@@ -6,10 +6,11 @@
 
 ### Tasks
 
- * Cromplete the `LayupDrawer` class in `js/layup-drawer.js` to draw a layup diagram.
- * Data is provided inside `index.html` in the `cltLayup` variable.
- * Image assets are provided in the `images` directory.
+ * Complete the `Illustration` in the file `js/illustration/illustration-three.js` to render a 3D illustration.
+ * Use the `three.js` library to proceed with the rendering.
+ * The `wood` model is located in the `model/wood` folder, and the model is in the `FBX` format.
+ * Finish the task until the illustration resembles the image shown below with the original size.
 
 ### Expected Result
 
-![Expected Result](images/expected-result.png)
+![Expected Result](images/expected-result.jpg)
