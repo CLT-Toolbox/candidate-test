@@ -17,7 +17,7 @@
             <h3 class="text-lg font-medium text-gray-700">List Suppliers</h3>
 
             <a href="{{ route('suppliers.create') }}"
-               class="bg-indigo-600 hover:bg-indigo-700 text-black px-4 py-2 rounded-lg shadow">
+               class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg shadow">
                 + New Supplier
             </a>
         </div>

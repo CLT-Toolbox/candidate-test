@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\LayupController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SupplierController;
 use Illuminate\Support\Facades\Route;
@@ -19,24 +20,32 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/suppliers', [SupplierController::class, 'index'])
         ->name('suppliers.index');
-
     Route::get('/suppliers/create', [SupplierController::class, 'create'])
         ->name('suppliers.create');
-
     Route::post('/suppliers', [SupplierController::class, 'store'])
         ->name('suppliers.store');
-
     Route::get('/suppliers/{supplier}', [SupplierController::class, 'show'])
         ->name('suppliers.show');
-
     Route::get('/suppliers/{supplier}/edit', [SupplierController::class, 'edit'])
         ->name('suppliers.edit');
-
     Route::put('/suppliers/{supplier}', [SupplierController::class, 'update'])
         ->name('suppliers.update');
-
     Route::delete('/suppliers/{supplier}', [SupplierController::class, 'destroy'])
         ->name('suppliers.destroy');
+
+    // LAYUP
+    Route::get('/layups', [LayupController::class, 'index'])
+        ->name('layups.index');
+    Route::get('/layups/create', [LayupController::class, 'create'])
+        ->name('layups.create');
+    Route::post('/layups', [LayupController::class, 'store'])
+        ->name('layups.store');
+    Route::get('/layups/{layup}/edit', [LayupController::class, 'edit'])
+        ->name('layups.edit');
+    Route::put('/layups/{layup}', [LayupController::class, 'update'])
+        ->name('layups.update');
+    Route::delete('/layups/{layup}', [LayupController::class, 'destroy'])
+        ->name('layups.destroy');
 });
 
 require __DIR__.'/auth.php';

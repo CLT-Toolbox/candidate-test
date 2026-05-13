@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Layup extends Model
 {
-    protected $guarded = ['id'];
+    protected $fillable = ['supplier_id','name'];
 
     public function supplier()
     {

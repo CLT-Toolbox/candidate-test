@@ -20,6 +20,11 @@
                 <x-nav-link :href="route('suppliers.index')" :active="request()->routeIs('suppliers.*')">
                     {{ __('Suppliers') }}
                 </x-nav-link>
+
+                <x-nav-link :href="route('layups.index')" :active="request()->routeIs('layups.*')">
+                    {{ __('Layups') }}
+                </x-nav-link>
+
             </div>
 
             <!-- Settings Dropdown -->
@@ -78,6 +83,10 @@
 
         <x-responsive-nav-link :href="route('suppliers.index')" :active="request()->routeIs('suppliers.*')">
             {{ __('Suppliers') }}
+        </x-responsive-nav-link>
+
+        <x-responsive-nav-link :href="route('layups.index')" :active="request()->routeIs('layups.*')">
+            {{ __('Layups') }}
         </x-responsive-nav-link>
 
         <!-- Responsive Settings Options -->

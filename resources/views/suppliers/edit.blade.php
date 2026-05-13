@@ -21,6 +21,13 @@
                        name="name"
                        value="{{ $supplier->name }}"
                        class="w-full border-gray-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500">
+                
+                
+                    @error('name')
+                        <p class="text-red-500 text-sm mt-1">
+                            {{ $message }}
+                        </p>
+                    @enderror
 
                 <div class="mt-4 flex justify-end gap-2">
 

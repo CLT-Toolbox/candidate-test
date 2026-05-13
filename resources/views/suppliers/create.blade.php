@@ -20,7 +20,13 @@
                        name="name"
                        class="w-full border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
                        placeholder="Enter supplier name"
-                       required>
+                       >
+                
+                    @error('name')
+                        <p class="text-red-500 text-sm mt-1">
+                            {{ $message }}
+                        </p>
+                    @enderror
 
                 <div class="mt-4 flex justify-end gap-2">
 
