@@ -13,13 +13,26 @@
             </div>
         @endif
 
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-medium text-gray-700">List Suppliers</h3>
+       <div class="flex justify-between items-center mb-4">
 
-            <a href="{{ route('suppliers.create') }}"
-               class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg shadow">
-                + New Supplier
-            </a>
+            <h3 class="text-lg font-medium text-gray-700">
+                List Suppliers
+            </h3>
+
+            <div class="flex gap-2">
+
+                <a href="{{ route('suppliers.export.csv') }}"
+                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow">
+                    Export CSV
+                </a>
+
+                <a href="{{ route('suppliers.create') }}"
+                class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg shadow">
+                    + New Supplier
+                </a>
+
+            </div>
+
         </div>
 
         <div class="bg-white shadow rounded-xl overflow-hidden">

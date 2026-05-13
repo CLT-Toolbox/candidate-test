@@ -19,10 +19,13 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    // SUPPLIER
     Route::get('/suppliers', [SupplierController::class, 'index'])
         ->name('suppliers.index');
     Route::get('/suppliers/create', [SupplierController::class, 'create'])
         ->name('suppliers.create');
+    Route::get('/suppliers/export/csv', [SupplierController::class, 'exportCsv'])
+        ->name('suppliers.export.csv');
     Route::post('/suppliers', [SupplierController::class, 'store'])
         ->name('suppliers.store');
     Route::get('/suppliers/{supplier}', [SupplierController::class, 'show'])
