@@ -1,102 +1,147 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Beam Analysis Plot</title>
-</head>
-<body>
+  </head>
+  <body>
     <form>
-        <table>
-            <tr>
-                <td>Condition</td>
-                <td>
-                    <select name="condition" id="condition">
-                        <option value="simply-supported">Simply Supported</option>
-                        <option value="two-span-unequal">Two Span Unequal</option>
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <td>Load Force (w)</td>
-                <td><input type="text" id="w"> kN/m</td>
-            </tr>
-            <tr>
-                <td>Primary Span (L1)</td>
-                <td><input type="text" id="primarySpan" value="4"> m</td>
-            </tr>
-            <tr>
-                <td>Secondary Span (L2)</td>
-                <td><input type="text" id="secondarySpan" value=""> m</td>
-            </tr>
-            <tr>
-                <td colspan="2"><hr></td>
-            </tr>
-            <tr>
-                <td>j2</td>
-                <td><input type="text" id="j2" value="2"></td>
-            </tr>
-            <tr>
-                <td>Bending Stiffnes (EI)</td>
-                <td><input type="text" id="EI" value="3150000000000"> Nmm<sup>2</sup></td>
-            </tr>
+      <table>
+        <tr>
+          <td>Condition</td>
+          <td>
+            <select name="condition" id="condition">
+              <option value="simply-supported">Simply Supported</option>
+              <option value="two-span-unequal">Two Span Unequal</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td>Load Force (w)</td>
+          <td><input type="text" id="w" /> kN/m</td>
+        </tr>
+        <tr>
+          <td>Primary Span (L1)</td>
+          <td><input type="text" id="primarySpan" value="4" /> m</td>
+        </tr>
+        <tr>
+          <td>Secondary Span (L2)</td>
+          <td><input type="text" id="secondarySpan" value="" /> m</td>
+        </tr>
+        <tr>
+          <td colspan="2"><hr /></td>
+        </tr>
+        <tr>
+          <td>j2</td>
+          <td><input type="text" id="j2" value="2" /></td>
+        </tr>
+        <tr>
+          <td>Bending Stiffnes (EI)</td>
+          <td>
+            <input type="text" id="EI" value="3150000000000" /> Nmm<sup>2</sup>
+          </td>
+        </tr>
 
-            <tr>
-                <td colspan="2"><hr></td>
-            </tr>
+        <tr>
+          <td colspan="2"><hr /></td>
+        </tr>
 
-            <tr>
-                <td colspan="2" style="text-align: center;">
-                    <button type="button" id="calculate">Calculate</button>
-                </td>
-            </tr>
-        </table>
+        <tr>
+          <td colspan="2" style="text-align: center">
+            <button type="button" id="calculate">Calculate</button>
+          </td>
+        </tr>
+      </table>
     </form>
     <canvas id="deflection_plot"></canvas>
     <canvas id="shear_force_plot"></canvas>
     <canvas id="bending_moment_plot"></canvas>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="js/beam-analysis.js"></script>
     <script src="js/analysis-plotter.js"></script>
 
     <script>
-        /**
-         * Get float value of specified field
-         */
-        function floatVal(id) {
-            return parseFloat(
-                document.getElementById(id).value
-            );
+      /**
+       * Get float value of specified field
+       */
+      function floatVal(id) {
+        return parseFloat(document.getElementById(id).value) || 0;
+      }
+
+      function stringVal(id) {
+        return document.getElementById(id).value;
+      }
+
+      var plotter = {
+        deflection: new AnalysisPlotter("deflection_plot"),
+        shearForce: new AnalysisPlotter("shear_force_plot"),
+        bendingMoment: new AnalysisPlotter("bending_moment_plot"),
+      };
+
+      function reorderCharts(condition) {
+        var parent = document.getElementById("deflection_plot").parentNode;
+        var deflectionCanvas = document.getElementById("deflection_plot");
+        var shearCanvas = document.getElementById("shear_force_plot");
+        var bendingCanvas = document.getElementById("bending_moment_plot");
+
+        var desiredOrder;
+
+        if (condition === "simply-supported") {
+          desiredOrder = [shearCanvas, deflectionCanvas, bendingCanvas];
+        } else if (condition === "two-span-unequal") {
+          desiredOrder = [shearCanvas, bendingCanvas, deflectionCanvas];
+        } else {
+          desiredOrder = [deflectionCanvas, shearCanvas, bendingCanvas];
         }
 
-        function stringVal(id) {
-            return document.getElementById(id).value;
-        }
+        desiredOrder.forEach(function (canvas) {
+          parent.appendChild(canvas);
+        });
+      }
 
-        document.getElementById('calculate').addEventListener('click', function(e) {
-            var beam = new Beam();
+      document
+        .getElementById("calculate")
+        .addEventListener("click", function (e) {
+          var beam = new Beam(
+            floatVal("primarySpan"),
+            floatVal("secondarySpan"),
+            new Material("No Name", {
+              EI: floatVal("EI"),
+            }),
+            floatVal("j2"),
+          );
 
-            beam.primarySpan    = floatVal('primarySpan');
-            beam.secondarySpan  = floatVal('secondarySpan');
-            beam.material       = new Material('No Name', {
-                EI : floatVal('EI')
-            });
+          var beamAnalysis = new BeamAnalysis();
+          var condition = stringVal("condition");
 
-            var plotter = {
-                deflection      : new AnalysisPlotter('deflection_plot'),
-                shearForce      : new AnalysisPlotter('shear_force_plot'),
-                bendingMoment   : new AnalysisPlotter('bending_moment_plot')
-            }
+          reorderCharts(condition);
 
-            var beamAnalysis        = new BeamAnalysis();
-            var deflectionData      = beamAnalysis.getDeflection(beam, floatVal('w'), stringVal('condition'));
-            var bendingMomentData   = beamAnalysis.getBendingMoment(beam, floatVal('w'), stringVal('condition'));
-            var shearForceData      = beamAnalysis.getShearForce(beam, floatVal('w'), stringVal('condition'));
+          var deflectionData = beamAnalysis.getDeflection(
+            beam,
+            floatVal("w"),
+            condition,
+          );
+          var bendingMomentData = beamAnalysis.getBendingMoment(
+            beam,
+            floatVal("w"),
+            condition,
+          );
+          var shearForceData = beamAnalysis.getShearForce(
+            beam,
+            floatVal("w"),
+            condition,
+          );
 
-            plotter.deflection.plot(deflectionData);
-            plotter.shearForce.plot(shearForceData);
-            plotter.bendingMoment.plot(bendingMomentData);
+          deflectionData.condition = condition;
+          bendingMomentData.condition = condition;
+          shearForceData.condition = condition;
+
+          plotter.deflection.plot(deflectionData);
+          plotter.shearForce.plot(shearForceData);
+          plotter.bendingMoment.plot(bendingMomentData);
         });
     </script>
-</body>
+  </body>
 </html>
