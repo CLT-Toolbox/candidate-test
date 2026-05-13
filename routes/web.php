@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\LayerController;
 use App\Http\Controllers\LayupController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SupplierController;
@@ -46,6 +47,20 @@ Route::middleware('auth')->group(function () {
         ->name('layups.update');
     Route::delete('/layups/{layup}', [LayupController::class, 'destroy'])
         ->name('layups.destroy');
+
+    //LAYER 
+    Route::get('/layers', [LayerController::class, 'index'])
+        ->name('layers.index');
+    Route::get('/layers/create', [LayerController::class, 'create'])
+        ->name('layers.create');
+    Route::post('/layers', [LayerController::class, 'store'])
+        ->name('layers.store');
+    Route::get('/layers/{layer}/edit', [LayerController::class, 'edit'])
+        ->name('layers.edit');
+    Route::put('/layers/{layer}', [LayerController::class, 'update'])
+        ->name('layers.update');
+    Route::delete('/layers/{layer}', [LayerController::class, 'destroy'])
+        ->name('layers.destroy');
 });
 
 require __DIR__.'/auth.php';

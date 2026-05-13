@@ -25,6 +25,10 @@
                     {{ __('Layups') }}
                 </x-nav-link>
 
+                <x-nav-link :href="route('layers.index')" :active="request()->routeIs('layers.*')">
+                    {{ __('Layers') }}
+                </x-nav-link>
+
             </div>
 
             <!-- Settings Dropdown -->
@@ -87,6 +91,10 @@
 
         <x-responsive-nav-link :href="route('layups.index')" :active="request()->routeIs('layups.*')">
             {{ __('Layups') }}
+        </x-responsive-nav-link>
+        
+        <x-responsive-nav-link :href="route('layers.index')" :active="request()->routeIs('layers.*')">
+            {{ __('Layers') }}
         </x-responsive-nav-link>
 
         <!-- Responsive Settings Options -->
