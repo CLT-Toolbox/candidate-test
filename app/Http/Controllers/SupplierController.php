@@ -88,22 +88,26 @@ class SupplierController extends Controller
 
         fgetcsv($file); // skip header
 
-        // PROCESS ROWS
         while (($row = fgetcsv($file)) !== false) {
 
             [$supplierName, $layupName, $order, $thickness, $width, $angle] = $row;
 
-            $supplier = Supplier::firstOrCreate(['name' => $supplierName]);
+            $supplier = Supplier::firstOrCreate([
+                'name' => trim($supplierName)
+            ]);
 
             $layup = Layup::firstOrCreate([
                 'supplier_id' => $supplier->id,
-                'name' => $layupName
+                'name' => trim($layupName)
             ]);
 
             $existingLayer = Layer::where('layup_id', $layup->id)
-                ->where('layer_order', $order)
+                ->where('layer_order', (int)$order)
                 ->first();
 
+            $shouldCreate = true;
+
+            // HANDLE EXISTING
             if ($existingLayer) {
 
                 $isConflict =
@@ -111,43 +115,61 @@ class SupplierController extends Controller
                     $existingLayer->width != $width ||
                     $existingLayer->angle != $angle;
 
+                // REJECT (STOP ALL)
                 if ($isConflict && $strategy === 'reject') {
                     fclose($file);
                     return back()->with('error', 'Import aborted due to conflict.');
                 }
 
+                // SKIP (do nothing)
                 if ($isConflict && $strategy === 'skip') {
-                    continue;
+                    $shouldCreate = false;
                 }
 
+                // OVERWRITE (update existing, no create)
                 if ($isConflict && $strategy === 'overwrite') {
                     $existingLayer->update([
                         'thickness' => $thickness,
                         'width' => $width,
                         'angle' => $angle,
                     ]);
-                    continue;
+                    $shouldCreate = false;
                 }
 
-                if ($isConflict && $strategy === 'duplicate') {
+                // DUPLICATE (create new layer)
+                if ($strategy === 'duplicate') {
+
+                    $layup = Layup::create([
+                        'supplier_id' => $supplier->id,
+                        'name' => $layupName . ' (imported)'
+                    ]);
+
                     Layer::create([
                         'layup_id' => $layup->id,
-                        'layer_order' => $order,
+                        'layer_order' => (int)$order,
                         'thickness' => $thickness,
                         'width' => $width,
                         'angle' => $angle,
                     ]);
                     continue;
                 }
+
+                // kalau tidak conflict -> otomatis skip create (karena sudah ada data sama)
+                if (!$isConflict) {
+                    $shouldCreate = false;
+                }
             }
 
-            Layer::create([
-                'layup_id' => $layup->id,
-                'layer_order' => $order,
-                'thickness' => $thickness,
-                'width' => $width,
-                'angle' => $angle,
-            ]);
+            // CREATE NEW LAYER
+            if ($shouldCreate) {
+                Layer::create([
+                    'layup_id' => $layup->id,
+                    'layer_order' => (int)$order,
+                    'thickness' => $thickness,
+                    'width' => $width,
+                    'angle' => $angle,
+                ]);
+            }
         }
 
         fclose($file);

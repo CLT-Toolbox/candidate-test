@@ -20,6 +20,7 @@
                         <th class="p-3">Thickness</th>
                         <th class="p-3">Width</th>
                         <th class="p-3">Angle</th>
+                        <th class="p-3">Added At</th>
                         <th class="p-3 text-right">Action</th>
                     </tr>
                 </thead>
@@ -32,6 +33,7 @@
                             <td class="p-3">{{ $layer->thickness }}</td>
                             <td class="p-3">{{ $layer->width }}</td>
                             <td class="p-3">{{ $layer->angle }}</td>
+                            <td class="p-3">{{ $layer->created_at }}</td>
 
                             <td class="p-3 text-right space-x-2">
 

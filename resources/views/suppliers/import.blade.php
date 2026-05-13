@@ -5,6 +5,12 @@
 
     <div class="py-6 max-w-7xl mx-auto sm:px-6 lg:px-8">
 
+        @if(session('error'))
+            <div class="mb-4 p-3 bg-red-100 text-red-800 rounded">
+                {{ session('error') }}
+            </div>
+        @endif
+
         <form method="POST"
               action="{{ route('suppliers.import.csv') }}"
               enctype="multipart/form-data"
